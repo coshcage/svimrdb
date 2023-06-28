@@ -43,6 +43,7 @@ typedef BOOL(*SICBF_SELECT)(P_CELL * pitem, size_t param);
 /* Table structure. */
 typedef struct st_TABLE
 {
+	char * tblname;
 	ARRAY_Z header;
 	MATRIX tbldata;
 } TABLE, * P_TABLE;
