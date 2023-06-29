@@ -2,10 +2,10 @@
  * Name:        svimrdb.h
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0000000000L00630
+ * File ID:     0628231947B0000000000L00678
  * License:     GPLv2.
  */
-#include <stdlib.h> /* Using function malloc, free. */
+#include <stdlib.h> /* Using function malloc, free, realloc. */
 #include <string.h> /* Using function memcpy. */
 #include "svimrdb.h"
 
@@ -621,8 +621,57 @@ P_CELL siCreateCell(void * pitem, CellType ct)
  * Caution:       N/A.
  * Tip:           N/A.
  */
-P_CELL siDeleteCell(P_CELL * ppcell)
+void siDeleteCell(P_CELL * ppcell)
 {
 	free(*ppcell);
 	*ppcell = NULL;
+}
+
+/* Function name: siAlterCell
+ * Description:   Reallocate a cell of a table.
+ * Parameter:
+ *       pcl Pointer to the cell you want to reallocate.
+ *    newval Pointer to the new cell value.
+ * Return value:  Pointer to a allocated cell.
+ * Caution:       Parameter newval shall not be NULL.
+ * Tip:           N/A.
+ */
+P_CELL siAlterCell(P_CELL pcl, void * newval)
+{
+	void * rtn = NULL;
+	if (NULL != pcl)
+	{
+		size_t l = sizeof(CELL), m = l;
+		switch (pcl->ct)
+		{
+		case CT_CHAR:
+			m = sizeof(char);
+			l += m;
+			break;
+		case CT_SHORT:
+			m = sizeof(short);
+			l += m;
+			break;
+		case CT_INTEGER:
+			m = sizeof(int);
+			l += m;
+			break;
+		case CT_LONG:
+			m = sizeof(long);
+			l += m;
+			break;
+		case CT_STRING:
+			m = strlen((char *)newval) + 1;
+			l += m;
+			break;
+		}
+		rtn = realloc(pcl, l);
+		if (NULL != rtn)
+		{
+			((P_CELL)rtn)->ct = pcl->ct;
+			((P_CELL)rtn)->pdata = (PUCHAR)rtn + sizeof(CELL);
+			memcpy(((P_CELL)rtn)->pdata, newval, m);
+		}
+	}
+	return (P_CELL)rtn;
 }

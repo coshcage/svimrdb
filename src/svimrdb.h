@@ -58,6 +58,8 @@ P_MATRIX siCreateSelectView(P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param);
 P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz);
 /* Cell operation functions. */
 P_CELL siCreateCell(void * pitem, CellType ct);
-P_CELL siDeleteCell(P_CELL * ppcell);
+void siDeleteCell(P_CELL * ppcell);
+
+void siPrintView(P_MATRIX pmtx);
 
 #endif

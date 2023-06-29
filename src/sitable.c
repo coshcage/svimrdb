@@ -6,6 +6,7 @@
  * License:     GPLv2.
  */
 
+#include <stdio.h> /* Using function printf. */
 #include "svimrdb.h"
 
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
@@ -48,6 +49,46 @@ void siDestoryView(P_MATRIX pmtx)
 				if (NULL != *ppcold)
 					siDeleteCell(ppcold);
 			}
+		}
+	}
+}
+
+void siPrintView(P_MATRIX pmtx)
+{
+	if (NULL != pmtx)
+	{
+		size_t i, j;
+		for (i = 0; i < pmtx->ln; ++i)
+		{
+			for (j = 0; j < pmtx->col; ++j)
+			{
+				P_CELL pc = NULL;
+				strGetValueMatrix(&pc, pmtx, i, j, sizeof(P_CELL));
+				if (NULL != pc)
+				{
+					switch (pc->ct)
+					{
+					case CT_CHAR:
+						printf("%c\t", *(char *)pc->pdata);
+						break;
+					case CT_SHORT:
+						printf("%d\t", *(short *)pc->pdata);
+						break;
+					case CT_INTEGER:
+						printf("%d\t", *(int *)pc->pdata);
+						break;
+					case CT_LONG:
+						printf("%ld\t", *(long *)pc->pdata);
+						break;
+					case CT_STRING:
+						printf("%s\t", (char *)pc->pdata);
+						break;
+					}
+				}
+				else
+					printf("%s\t", "null");
+			}
+			printf("%c", '\n');
 		}
 	}
 }
