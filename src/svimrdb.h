@@ -54,12 +54,12 @@ P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
 P_MATRIX siCreateIntersectionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
 P_MATRIX siCreateDifferenceView(P_MATRIX pmtxa, P_MATRIX pmtxb);
 P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb);
-P_MATRIX siCreateSelectView(P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param);
+P_MATRIX siCreateSelectView(P_ARRAY_Z * pparr, P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param);
 P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz);
 /* Cell operation functions. */
 P_CELL siCreateCell(void * pitem, CellType ct);
 void siDeleteCell(P_CELL * ppcell);
-
+/* Table and view functions. */
 void siPrintView(P_MATRIX pmtx);
 
 #endif

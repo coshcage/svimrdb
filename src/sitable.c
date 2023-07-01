@@ -7,6 +7,9 @@
  */
 
 #include <stdio.h> /* Using function printf. */
+#include <stdlib.h> /* Using function malloc, free. */
+#include <string.h> /* Using function strdup. */
+#include <stdarg.h>
 #include "svimrdb.h"
 
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
@@ -91,4 +94,98 @@ void siPrintView(P_MATRIX pmtx)
 			printf("%c", '\n');
 		}
 	}
+}
+
+// TODO:
+// siCreateTable (x)
+// siDeleteTable (x)
+// siAddColumn
+// SiDropColumn
+// siInsertInto (x)
+// siDeleteFrom
+// siUpdateCell
+
+P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
+{
+	P_TABLE ptbl = (P_TABLE)malloc(sizeof(TABLE));
+	if (NULL != ptbl)
+	{
+		size_t i;
+		ptbl->tblname = strdup(tblname);
+		strCopyArrayZ(&(ptbl->header), parrhdr, sizeof(TBLHDR));
+		for (i = 0; i < parrhdr->num; ++i)
+		{
+			P_TBLHDR pt = strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), i);
+			pt->strname = strdup(pt);
+		}
+		strInitMatrix(&ptbl->tbldata, 0, parrhdr->num, sizeof(P_CELL));
+	}
+	return ptbl;
+}
+
+void siDeleteTable(P_TABLE ptbl)
+{
+	size_t i;
+	free(ptbl->tblname);
+	
+	for (i = 0; i < ptbl->header.num; ++i)
+	{
+		P_TBLHDR pt = strLocateItemArrayZ(&(ptbl->header), sizeof(TBLHDR), i);
+		free(pt->strname);
+	}
+	strFreeArrayZ(&(ptbl->header));
+
+	if (NULL != ptbl->tbldata.arrz.pdata)
+	{
+		siDestoryView(&(ptbl->tbldata));
+		strFreeMatrix(&(ptbl->tbldata));
+	}
+}
+
+BOOL siInsertIntoTable(P_TABLE ptbl, ...)
+{
+	size_t i, j;
+	j = ptbl->tbldata.ln;
+	if (NULL != strResizeMatrix(&(ptbl->tbldata), ptbl->tbldata.ln + 1, ptbl->tbldata.col, sizeof(P_CELL)))
+	{
+
+		va_list arg;
+		va_start(arg, ptbl->header.num);
+
+		++ptbl->tbldata.ln;
+		for (i = 0; i < ptbl->header.num; ++i)
+		{
+			P_CELL pc;
+			P_TBLHDR pt = strLocateItemArrayZ(&(ptbl->header), sizeof(TBLHDR), i);
+			switch (pt->ct)
+			{
+			case CT_CHAR:
+				pc = siCreateCell(va_arg(arg, char *), pt->ct);
+				break;
+			case CT_SHORT:
+				pc = siCreateCell(va_arg(arg, short *), pt->ct);
+				break;
+			case CT_INTEGER:
+				pc = siCreateCell(va_arg(arg, int *), pt->ct);
+				break;
+			case CT_LONG:
+				pc = siCreateCell(va_arg(arg, long *), pt->ct);
+				break;
+			case CT_STRING:
+				pc = siCreateCell(va_arg(arg, char **), pt->ct);
+				break;
+			}
+			strSetValueMatrix(&(ptbl->tbldata), j, i, &pc, sizeof(P_CELL));
+		}
+
+		va_end(arg);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOL siDeleteFromTable(P_TABLE ptbl, SICBF_SELECT cbfsel, size_t param)
+{
+
+	return FALSE;
 }

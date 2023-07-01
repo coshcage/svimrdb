@@ -5,6 +5,7 @@
  * File ID:     0628231947B0000000000L00678
  * License:     GPLv2.
  */
+#include <stdio.h>  /* Using macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, realloc. */
 #include <string.h> /* Using function memcpy. */
 #include "svimrdb.h"
@@ -419,6 +420,8 @@ P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb)
 /* Function name: siCreateSelectView
  * Description:   Create a restriction view.
  * Parameter:
+ *     pparr A new created sized array contains each column number of selected tuple.
+ *           Input NULL to dismiss this parameter.
  *      pmtx Pointer to a view.
  *    cbfsel Pointer a selection function
  *     param Pointer to an external parameter.
@@ -449,7 +452,7 @@ P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb)
  //	strSetValueMatrix(pmtx, 2, 0, &pc, sizeof(P_CELL));
  //	pc = siCreateCell("b2", CT_STRING);
  //	strSetValueMatrix(pmtx, 2, 1, &pc, sizeof(P_CELL));
- //	p = siCreateSelectView(pmtx, cbftestsel, 0);
+ //	p = siCreateSelectView(NULL, pmtx, cbftestsel, 0);
  //	printf("%s\n", (char *)(*(P_CELL *)strGetValueMatrix(NULL, p, 0, 0, sizeof(P_CELL)))->pdata);
  //	printf("%s\n", (char *)(*(P_CELL *)strGetValueMatrix(NULL, p, 0, 1, sizeof(P_CELL)))->pdata);
  //	printf("%s\n", (char *)(*(P_CELL *)strGetValueMatrix(NULL, p, 1, 0, sizeof(P_CELL)))->pdata);
@@ -459,7 +462,7 @@ P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb)
  //	return 0;
  //}
  */
-P_MATRIX siCreateSelectView(P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param)
+P_MATRIX siCreateSelectView(P_ARRAY_Z * pparr, P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param)
 {
 	P_MATRIX pmtxr = NULL;
 	if (NULL == pmtx)
@@ -468,12 +471,16 @@ P_MATRIX siCreateSelectView(P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param)
 	{
 		size_t i, j;
 		pmtxr = strCreateMatrix(pmtx->ln, pmtx->col, sizeof(P_CELL));
+		if (NULL != pparr)
+			*pparr = strCreateArrayZ(BUFSIZ, sizeof(size_t));
 		if (NULL != pmtxr)
 		{
 			for (j = i = 0; i < pmtx->ln; ++i)
 			{
 				if (FALSE != cbfsel(strGetValueMatrix(NULL, pmtx, i, 0, sizeof(P_CELL)), param))
 				{
+					if (NULL != pparr)
+						*(size_t *)strLocateItemArrayZ(*pparr, sizeof(size_t), j) = i;
 					memcpy
 					(
 						strGetValueMatrix(NULL, pmtxr, j, 0, sizeof(P_CELL)),
@@ -481,6 +488,17 @@ P_MATRIX siCreateSelectView(P_MATRIX pmtx, SICBF_SELECT cbfsel, size_t param)
 						sizeof(P_CELL) * pmtx->col
 					);
 					++j;
+					if (NULL != pparr)
+					{
+						if (j >= strLevelArrayZ(*pparr))
+						{
+							if (NULL == strResizeArrayZ(*pparr, strLevelArrayZ(*pparr) + BUFSIZ, sizeof(size_t)))
+							{
+								j = 0;
+								break;
+							}
+						}
+					}
 				}
 			}
 			if (NULL == strResizeMatrix(pmtxr, j, pmtx->col, sizeof(P_CELL)))
@@ -573,44 +591,48 @@ P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz)
  *     pitem Pointer to the value which allows you to be copied.
  *        ct The type of cell value you want to assign.
  * Return value:  Pointer to a new allocated cell.
- * Caution:       Parameter pitem shall not be NULL.
+ * Caution:       N/A.
  * Tip:           N/A.
  */
 P_CELL siCreateCell(void * pitem, CellType ct)
 {
-	void * rtn;
-	size_t l = sizeof(CELL), m = l;
-	switch (ct)
+	if (NULL != pitem)
 	{
-	case CT_CHAR:
-		m = sizeof(char);
-		l += m;
-		break;
-	case CT_SHORT:
-		m = sizeof(short);
-		l += m;
-		break;
-	case CT_INTEGER:
-		m = sizeof(int);
-		l += m;
-		break;
-	case CT_LONG:
-		m = sizeof(long);
-		l += m;
-		break;
-	case CT_STRING:
-		m = strlen((char *)pitem) + 1;
-		l += m;
-		break;
+		void * rtn;
+		size_t l = sizeof(CELL), m = l;
+		switch (ct)
+		{
+		case CT_CHAR:
+			m = sizeof(char);
+			l += m;
+			break;
+		case CT_SHORT:
+			m = sizeof(short);
+			l += m;
+			break;
+		case CT_INTEGER:
+			m = sizeof(int);
+			l += m;
+			break;
+		case CT_LONG:
+			m = sizeof(long);
+			l += m;
+			break;
+		case CT_STRING:
+			m = strlen((char *)pitem) + 1;
+			l += m;
+			break;
+		}
+		rtn = malloc(l);
+		if (NULL != rtn)
+		{
+			((P_CELL)rtn)->ct = ct;
+			((P_CELL)rtn)->pdata = (PUCHAR)rtn + sizeof(CELL);
+			memcpy(((P_CELL)rtn)->pdata, pitem, m);
+		}
+		return (P_CELL)rtn;
 	}
-	rtn = malloc(l);
-	if (NULL != rtn)
-	{
-		((P_CELL)rtn)->ct = ct;
-		((P_CELL)rtn)->pdata = (PUCHAR)rtn + sizeof(CELL);
-		memcpy(((P_CELL)rtn)->pdata, pitem, m);
-	}
-	return (P_CELL)rtn;
+	return NULL;
 }
 
 /* Function name: siDeleteCell
