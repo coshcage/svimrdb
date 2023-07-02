@@ -6,11 +6,13 @@
  * License:     GPLv2.
  */
 
-#include <stdio.h> /* Using function printf. */
+#include <stdio.h>  /* Using function printf. */
 #include <stdlib.h> /* Using function malloc, free. */
 #include <string.h> /* Using function strdup. */
 #include <stdarg.h>
 #include "svimrdb.h"
+
+#define strdup _strdup
 
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
 {
@@ -102,8 +104,8 @@ void siPrintView(P_MATRIX pmtx)
 // siAddColumn
 // SiDropColumn
 // siInsertInto (x)
-// siDeleteFrom
-// siUpdateCell
+// siDeleteFrom (x)
+// siUpdateCell (x)
 
 P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 {
@@ -116,7 +118,7 @@ P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 		for (i = 0; i < parrhdr->num; ++i)
 		{
 			P_TBLHDR pt = strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), i);
-			pt->strname = strdup(pt);
+			pt->strname = strdup(pt->strname);
 		}
 		strInitMatrix(&ptbl->tbldata, 0, parrhdr->num, sizeof(P_CELL));
 	}
@@ -184,8 +186,29 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 	return FALSE;
 }
 
-BOOL siDeleteFromTable(P_TABLE ptbl, SICBF_SELECT cbfsel, size_t param)
+BOOL siDeleteFromTable(P_TABLE ptbl, size_t col)
+{
+	if (col < ptbl->tbldata.col)
+	{
+		strRemoveItemArrayZ(&(ptbl->tbldata.arrz), sizeof(P_CELL) * ptbl->tbldata.col, col, TRUE);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void siUpdateTableCell(P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col)
+{
+	P_CELL pc = siCreateCell(pval, ct);
+	siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, col, sizeof(P_CELL)));
+	strSetValueMatrix(&ptbl->tbldata, ln, col, &pc, sizeof(P_CELL));
+}
+
+void siAddTableColumn()
 {
 
-	return FALSE;
+}
+
+void siDropTableColumn()
+{
+
 }

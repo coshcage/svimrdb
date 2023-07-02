@@ -501,6 +501,8 @@ P_MATRIX siCreateSelectView(P_ARRAY_Z * pparr, P_MATRIX pmtx, SICBF_SELECT cbfse
 					}
 				}
 			}
+			if (NULL != pparr)
+				strResizeArrayZ(*pparr, j, sizeof(size_t));
 			if (NULL == strResizeMatrix(pmtxr, j, pmtx->col, sizeof(P_CELL)))
 				return NULL;
 			pmtxr->ln = j;

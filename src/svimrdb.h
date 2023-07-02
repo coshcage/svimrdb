@@ -48,6 +48,7 @@ typedef struct st_TABLE
 	MATRIX tbldata;
 } TABLE, * P_TABLE;
 
+
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
