@@ -8,6 +8,7 @@
 #include <stdio.h>  /* Using macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, realloc. */
 #include <string.h> /* Using function memcpy. */
+#include <math.h>   /* Using function roundf, round. */
 #include "svimrdb.h"
 
 /* size_t integer copmaration function. */
@@ -54,10 +55,10 @@ static int _sicbfcmp(const void * px, const void * py)
 			r = *(long *)pcx->pdata - *(long *)pcy->pdata;
 			break;
 		case CT_FLOAT:
-			r = *(float *)pcx->pdata - *(float *)pcy->pdata;
+			r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
 			break;
 		case CT_DOUBLE:
-			r = *(double *)pcx->pdata - *(double *)pcy->pdata;
+			r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
 			break;
 		case CT_STRING:
 			r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
