@@ -20,6 +20,8 @@ typedef enum en_CellType
 	CT_SHORT,
 	CT_INTEGER,
 	CT_LONG,
+	CT_FLOAT,
+	CT_DOUBLE,
 	CT_STRING
 } CellType;
 

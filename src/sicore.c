@@ -53,6 +53,12 @@ static int _sicbfcmp(const void * px, const void * py)
 		case CT_LONG:
 			r = *(long *)pcx->pdata - *(long *)pcy->pdata;
 			break;
+		case CT_FLOAT:
+			r = *(float *)pcx->pdata - *(float *)pcy->pdata;
+			break;
+		case CT_DOUBLE:
+			r = *(double *)pcx->pdata - *(double *)pcy->pdata;
+			break;
 		case CT_STRING:
 			r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
 			break;
@@ -620,6 +626,14 @@ P_CELL siCreateCell(void * pitem, CellType ct)
 			m = sizeof(long);
 			l += m;
 			break;
+		case CT_FLOAT:
+			m = sizeof(float);
+			l += m;
+			break;
+		case CT_DOUBLE:
+			m = sizeof(double);
+			l += m;
+			break;
 		case CT_STRING:
 			m = strlen((char *)pitem) + 1;
 			l += m;
@@ -682,6 +696,14 @@ P_CELL siAlterCell(P_CELL pcl, void * newval)
 			break;
 		case CT_LONG:
 			m = sizeof(long);
+			l += m;
+			break;
+		case CT_FLOAT:
+			m = sizeof(float);
+			l += m;
+			break;
+		case CT_DOUBLE:
+			m = sizeof(double);
 			l += m;
 			break;
 		case CT_STRING:

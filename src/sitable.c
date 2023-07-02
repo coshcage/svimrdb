@@ -85,6 +85,12 @@ void siPrintView(P_MATRIX pmtx)
 					case CT_LONG:
 						printf("%ld\t", *(long *)pc->pdata);
 						break;
+					case CT_FLOAT:
+						printf("%f\t", *(float *)pc->pdata);
+						break;
+					case CT_DOUBLE:
+						printf("%lf\t", *(double *)pc->pdata);
+						break;
 					case CT_STRING:
 						printf("%s\t", (char *)pc->pdata);
 						break;
@@ -101,11 +107,11 @@ void siPrintView(P_MATRIX pmtx)
 // TODO:
 // siCreateTable (x)
 // siDeleteTable (x)
-// siAddColumn
+// siAddColumn   (x)
 // SiDropColumn
-// siInsertInto (x)
-// siDeleteFrom (x)
-// siUpdateCell (x)
+// siInsertInto  (x)
+// siDeleteFrom  (x)
+// siUpdateCell  (x)
 
 P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 {
@@ -173,6 +179,12 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 			case CT_LONG:
 				pc = siCreateCell(va_arg(arg, long *), pt->ct);
 				break;
+			case CT_FLOAT:
+				pc = siCreateCell(va_arg(arg, float *), pt->ct);
+				break;
+			case CT_DOUBLE:
+				pc = siCreateCell(va_arg(arg, double *), pt->ct);
+				break;
 			case CT_STRING:
 				pc = siCreateCell(va_arg(arg, char **), pt->ct);
 				break;
@@ -203,12 +215,39 @@ void siUpdateTableCell(P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t
 	strSetValueMatrix(&ptbl->tbldata, ln, col, &pc, sizeof(P_CELL));
 }
 
-void siAddTableColumn()
+BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr)
 {
+	size_t i;
+	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
+	{
+		P_TBLHDR pt;
+		pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
+		if (strcmp(pt->strname, phdr->strname) == 0)
+			return FALSE;
+	}
+	i = strLevelArrayZ(&ptbl->header);
 
+	if (NULL != strResizeArrayZ(&ptbl->header, strLevelArrayZ(&ptbl->header) + 1, sizeof(TBLHDR)))
+	{
+		TBLHDR th;
+		th.ct = phdr->ct;
+		th.strname = strdup(phdr->strname);
+		strInsertItemArrayZ(&ptbl->header, i, &th, sizeof(TBLHDR), i);
+	}
+	else
+		return FALSE;
+
+	strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col, sizeof(P_CELL));
+	for (i = 0; i < ptbl->tbldata.ln; ++i)
+	{
+		P_CELL pc = NULL;
+		strSetValueMatrix(&ptbl->tbldata, i, ptbl->tbldata.col, &pc, sizeof(P_CELL));
+	}
+	++ptbl->tbldata.col;
+	return TRUE;
 }
 
-void siDropTableColumn()
+void siDropTableColumn(P_TABLE ptbl, size_t col)
 {
 
 }
