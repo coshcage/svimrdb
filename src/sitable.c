@@ -14,49 +14,6 @@
 
 #define strdup _strdup /* POSIX complient. */
 
-static size_t _sizSVTarget = 0;
-
-static int _cbfcmpSortView(const void * px, const void * py)
-{
-	int r = 0;
-	P_CELL pcx, pcy;
-
-	pcx = *((P_CELL *)px + _sizSVTarget);
-	pcy = *((P_CELL *)py + _sizSVTarget);
-
-	switch (pcx->ct)
-	{
-	case CT_CHAR:
-		r = *(char *)pcx->pdata - *(char *)pcy->pdata;
-		break;
-	case CT_SHORT:
-		r = *(short *)pcx->pdata - *(short *)pcy->pdata;
-		break;
-	case CT_INTEGER:
-		r = *(int *)pcx->pdata - *(int *)pcy->pdata;
-		break;
-	case CT_LONG:
-		r = *(long *)pcx->pdata - *(long *)pcy->pdata;
-		break;
-	case CT_FLOAT:
-		r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
-		break;
-	case CT_DOUBLE:
-		r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
-		break;
-	case CT_STRING:
-		r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
-		break;
-	}
-	return r;
-}
-
-void siSortView(P_MATRIX pmtx, size_t col)
-{
-	_sizSVTarget = col;
-	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _cbfcmpSortView);
-}
-
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
@@ -204,7 +161,6 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 		++ptbl->tbldata.ln;
 		for (i = 0; i < ptbl->header.num; ++i)
 		{
-			char * str;
 			P_CELL pc;
 			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			switch (pt->ct)
@@ -253,8 +209,11 @@ BOOL siDeleteFromTable(P_TABLE ptbl, size_t col)
 
 void siUpdateTableCell(P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col)
 {
-	P_CELL pc = siCreateCell(pval, ct);
-	siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, col, sizeof(P_CELL)));
+	P_CELL pc;
+	strGetValueMatrix(&pc, &ptbl->tbldata, ln, col, sizeof(P_CELL));
+	if (NULL != pc)
+		siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, col, sizeof(P_CELL)));
+	pc = siCreateCell(pval, ct);
 	strSetValueMatrix(&ptbl->tbldata, ln, col, &pc, sizeof(P_CELL));
 }
 
