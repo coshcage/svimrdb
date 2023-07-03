@@ -64,6 +64,7 @@ P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz);
 P_CELL siCreateCell(void * pitem, CellType ct);
 void siDeleteCell(P_CELL * ppcell);
 /* Table and view functions. */
+void siSortView(P_MATRIX pmtx, size_t col);
 P_MATRIX siInstantiateView(P_MATRIX pmtx);
 void siDestoryView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);

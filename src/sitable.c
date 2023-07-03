@@ -14,6 +14,47 @@
 
 #define strdup _strdup /* POSIX complient. */
 
+static size_t sizSVTarget = 0;
+
+static int _sicbfcmpSV(const void * px, const void * py)
+{
+	int r = 0;
+	P_CELL pcx, pcy;
+	pcx = *((P_CELL *)px + sizSVTarget);
+	pcy = *((P_CELL *)py + sizSVTarget);
+	switch (pcx->ct)
+	{
+	case CT_CHAR:
+		r = *(char *)pcx->pdata - *(char *)pcy->pdata;
+		break;
+	case CT_SHORT:
+		r = *(short *)pcx->pdata - *(short *)pcy->pdata;
+		break;
+	case CT_INTEGER:
+		r = *(int *)pcx->pdata - *(int *)pcy->pdata;
+		break;
+	case CT_LONG:
+		r = *(long *)pcx->pdata - *(long *)pcy->pdata;
+		break;
+	case CT_FLOAT:
+		r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
+		break;
+	case CT_DOUBLE:
+		r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
+		break;
+	case CT_STRING:
+		r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
+		break;
+	}
+	return r;
+}
+
+void siSortView(P_MATRIX pmtx, size_t col)
+{
+	sizSVTarget = col;
+	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _sicbfcmpSV);
+}
+
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
@@ -223,6 +264,7 @@ BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr)
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
 		P_TBLHDR pt;
+		strlowercase(phdr->strname);
 		pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 		if (strcmp(pt->strname, phdr->strname) == 0)
 			return FALSE;
