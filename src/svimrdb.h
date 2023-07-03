@@ -50,7 +50,8 @@ typedef struct st_TABLE
 	MATRIX tbldata;
 } TABLE, * P_TABLE;
 
-
+/* Misc functions. */
+char * strlowercase(char * str);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
@@ -63,6 +64,14 @@ P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz);
 P_CELL siCreateCell(void * pitem, CellType ct);
 void siDeleteCell(P_CELL * ppcell);
 /* Table and view functions. */
+void siSortView(P_MATRIX pmtx, size_t col);
+P_MATRIX siInstantiateView(P_MATRIX pmtx);
+void siDestoryView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);
+P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr);
+void siDeleteTable(P_TABLE ptbl);
+BOOL siInsertIntoTable(P_TABLE ptbl, ...);
+BOOL siDeleteFromTable(P_TABLE ptbl, size_t col);
+
 
 #endif

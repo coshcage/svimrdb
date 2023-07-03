@@ -19,7 +19,7 @@ static int _sicbftvsMergeView(void * pitem, size_t param);
 /* Warning: this following variable reduces the reentrancibility of most relational algebra functions.
  * This variable is used to store the view column number.
  */
-static size_t _sizCUTTarget;
+static size_t _sizCUTTarget = 0;
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _sicbfcmp

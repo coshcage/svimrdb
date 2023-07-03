@@ -7,12 +7,55 @@
  */
 
 #include <stdio.h>  /* Using function printf, macro BUFSIZ. */
-#include <stdlib.h> /* Using function malloc, free. */
+#include <stdlib.h> /* Using function malloc, free, qsort. */
 #include <string.h> /* Using function strdup. */
 #include <stdarg.h>
 #include "svimrdb.h"
 
 #define strdup _strdup /* POSIX complient. */
+
+static size_t _sizSVTarget = 0;
+
+static int _cbfcmpSortView(const void * px, const void * py)
+{
+	int r = 0;
+	P_CELL pcx, pcy;
+
+	pcx = *((P_CELL *)px + _sizSVTarget);
+	pcy = *((P_CELL *)py + _sizSVTarget);
+
+	switch (pcx->ct)
+	{
+	case CT_CHAR:
+		r = *(char *)pcx->pdata - *(char *)pcy->pdata;
+		break;
+	case CT_SHORT:
+		r = *(short *)pcx->pdata - *(short *)pcy->pdata;
+		break;
+	case CT_INTEGER:
+		r = *(int *)pcx->pdata - *(int *)pcy->pdata;
+		break;
+	case CT_LONG:
+		r = *(long *)pcx->pdata - *(long *)pcy->pdata;
+		break;
+	case CT_FLOAT:
+		r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
+		break;
+	case CT_DOUBLE:
+		r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
+		break;
+	case CT_STRING:
+		r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
+		break;
+	}
+	return r;
+}
+
+void siSortView(P_MATRIX pmtx, size_t col)
+{
+	_sizSVTarget = col;
+	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _cbfcmpSortView);
+}
 
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
 {
@@ -110,12 +153,18 @@ P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 	if (NULL != ptbl)
 	{
 		size_t i;
+
 		ptbl->tblname = strdup(tblname);
-		strCopyArrayZ(&(ptbl->header), parrhdr, sizeof(TBLHDR));
+		strlowercase(ptbl->tblname);
+
+		strInitArrayZ(&ptbl->header, parrhdr->num, sizeof(TBLHDR));
+		strCopyArrayZ(&ptbl->header, parrhdr, sizeof(TBLHDR));
+
 		for (i = 0; i < parrhdr->num; ++i)
 		{
-			P_TBLHDR pt = strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), i);
+			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			pt->strname = strdup(pt->strname);
+			strlowercase(pt->strname);
 		}
 		strInitMatrix(&ptbl->tbldata, 0, parrhdr->num, sizeof(P_CELL));
 	}
@@ -129,16 +178,17 @@ void siDeleteTable(P_TABLE ptbl)
 	
 	for (i = 0; i < ptbl->header.num; ++i)
 	{
-		P_TBLHDR pt = strLocateItemArrayZ(&(ptbl->header), sizeof(TBLHDR), i);
+		P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 		free(pt->strname);
 	}
-	strFreeArrayZ(&(ptbl->header));
+	strFreeArrayZ(&ptbl->header);
 
 	if (NULL != ptbl->tbldata.arrz.pdata)
 	{
-		siDestoryView(&(ptbl->tbldata));
-		strFreeMatrix(&(ptbl->tbldata));
+		siDestoryView(&ptbl->tbldata);
+		strFreeMatrix(&ptbl->tbldata);
 	}
+	free(ptbl);
 }
 
 BOOL siInsertIntoTable(P_TABLE ptbl, ...)
@@ -149,13 +199,14 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 	{
 
 		va_list arg;
-		va_start(arg, ptbl->header.num);
+		va_start(arg, ptbl);
 
 		++ptbl->tbldata.ln;
 		for (i = 0; i < ptbl->header.num; ++i)
 		{
+			char * str;
 			P_CELL pc;
-			P_TBLHDR pt = strLocateItemArrayZ(&(ptbl->header), sizeof(TBLHDR), i);
+			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			switch (pt->ct)
 			{
 			case CT_CHAR:
@@ -177,10 +228,10 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 				pc = siCreateCell(va_arg(arg, double *), pt->ct);
 				break;
 			case CT_STRING:
-				pc = siCreateCell(va_arg(arg, char **), pt->ct);
+				pc = siCreateCell(va_arg(arg, char *), pt->ct);
 				break;
 			}
-			strSetValueMatrix(&(ptbl->tbldata), j, i, &pc, sizeof(P_CELL));
+			strSetValueMatrix(&ptbl->tbldata, j, i, &pc, sizeof(P_CELL));
 		}
 
 		va_end(arg);
@@ -193,7 +244,8 @@ BOOL siDeleteFromTable(P_TABLE ptbl, size_t col)
 {
 	if (col < ptbl->tbldata.col)
 	{
-		strRemoveItemArrayZ(&(ptbl->tbldata.arrz), sizeof(P_CELL) * ptbl->tbldata.col, col, TRUE);
+		strRemoveItemArrayZ(&ptbl->tbldata.arrz, sizeof(P_CELL) * ptbl->tbldata.col, col, TRUE);
+		--ptbl->tbldata.ln;
 		return TRUE;
 	}
 	return FALSE;
@@ -223,7 +275,7 @@ BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr)
 		TBLHDR th;
 		th.ct = phdr->ct;
 		th.strname = strdup(phdr->strname);
-		strInsertItemArrayZ(&ptbl->header, i, &th, sizeof(TBLHDR), i);
+		strInsertItemArrayZ(&ptbl->header, &th, sizeof(TBLHDR), i);
 	}
 	else
 		return FALSE;
