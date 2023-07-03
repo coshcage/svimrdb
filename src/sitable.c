@@ -15,6 +15,7 @@
 #define strdup _strdup /* POSIX complient. */
 
 static size_t sizSVTarget = 0;
+static BOOL   bAscend = TRUE;
 
 static int _sicbfcmpSV(const void * px, const void * py)
 {
@@ -46,12 +47,16 @@ static int _sicbfcmpSV(const void * px, const void * py)
 		r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
 		break;
 	}
-	return r;
+	if (bAscend)
+		return r;
+	else
+		return -1 * r;
 }
 
-void siSortView(P_MATRIX pmtx, size_t col)
+void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
 {
 	sizSVTarget = col;
+	bAscend = ascd;
 	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _sicbfcmpSV);
 }
 
