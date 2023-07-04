@@ -51,7 +51,7 @@ typedef struct st_TABLE
 } TABLE, * P_TABLE;
 
 /* Misc functions. */
-char * strlowercase(char * str);
+char * siStrLCase(char * str);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
@@ -73,6 +73,7 @@ void siDeleteTable(P_TABLE ptbl);
 BOOL siInsertIntoTable(P_TABLE ptbl, ...);
 BOOL siDeleteFromTable(P_TABLE ptbl, size_t col);
 void siUpdateTableCell(P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col);
-
+BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr);
+BOOL siDropTableColumn(P_TABLE ptbl, size_t col);
 
 #endif

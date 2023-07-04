@@ -23,29 +23,32 @@ static int _sicbfcmpSV(const void * px, const void * py)
 	P_CELL pcx, pcy;
 	pcx = *((P_CELL *)px + sizSVTarget);
 	pcy = *((P_CELL *)py + sizSVTarget);
-	switch (pcx->ct)
+	if (NULL != pcx && NULL != pcy)
 	{
-	case CT_CHAR:
-		r = *(char *)pcx->pdata - *(char *)pcy->pdata;
-		break;
-	case CT_SHORT:
-		r = *(short *)pcx->pdata - *(short *)pcy->pdata;
-		break;
-	case CT_INTEGER:
-		r = *(int *)pcx->pdata - *(int *)pcy->pdata;
-		break;
-	case CT_LONG:
-		r = *(long *)pcx->pdata - *(long *)pcy->pdata;
-		break;
-	case CT_FLOAT:
-		r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
-		break;
-	case CT_DOUBLE:
-		r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
-		break;
-	case CT_STRING:
-		r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
-		break;
+		switch (pcx->ct)
+		{
+		case CT_CHAR:
+			r = *(char *)pcx->pdata - *(char *)pcy->pdata;
+			break;
+		case CT_SHORT:
+			r = *(short *)pcx->pdata - *(short *)pcy->pdata;
+			break;
+		case CT_INTEGER:
+			r = *(int *)pcx->pdata - *(int *)pcy->pdata;
+			break;
+		case CT_LONG:
+			r = *(long *)pcx->pdata - *(long *)pcy->pdata;
+			break;
+		case CT_FLOAT:
+			r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
+			break;
+		case CT_DOUBLE:
+			r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
+			break;
+		case CT_STRING:
+			r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
+			break;
+		}
 	}
 	if (bAscend)
 		return r;
@@ -158,7 +161,7 @@ P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 		size_t i;
 
 		ptbl->tblname = strdup(tblname);
-		strlowercase(ptbl->tblname);
+		siStrLCase(ptbl->tblname);
 
 		strInitArrayZ(&ptbl->header, parrhdr->num, sizeof(TBLHDR));
 		strCopyArrayZ(&ptbl->header, parrhdr, sizeof(TBLHDR));
@@ -167,7 +170,7 @@ P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr)
 		{
 			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			pt->strname = strdup(pt->strname);
-			strlowercase(pt->strname);
+			siStrLCase(pt->strname);
 		}
 		strInitMatrix(&ptbl->tbldata, 0, parrhdr->num, sizeof(P_CELL));
 	}
@@ -212,22 +215,22 @@ BOOL siInsertIntoTable(P_TABLE ptbl, ...)
 			switch (pt->ct)
 			{
 			case CT_CHAR:
-				pc = siCreateCell(va_arg(arg, char *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, char), pt->ct);
 				break;
 			case CT_SHORT:
-				pc = siCreateCell(va_arg(arg, short *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, short), pt->ct);
 				break;
 			case CT_INTEGER:
-				pc = siCreateCell(va_arg(arg, int *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, int), pt->ct);
 				break;
 			case CT_LONG:
-				pc = siCreateCell(va_arg(arg, long *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, long), pt->ct);
 				break;
 			case CT_FLOAT:
-				pc = siCreateCell(va_arg(arg, float *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, float), pt->ct);
 				break;
 			case CT_DOUBLE:
-				pc = siCreateCell(va_arg(arg, double *), pt->ct);
+				pc = siCreateCell(&va_arg(arg, double), pt->ct);
 				break;
 			case CT_STRING:
 				pc = siCreateCell(va_arg(arg, char *), pt->ct);
@@ -269,7 +272,7 @@ BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr)
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
 		P_TBLHDR pt;
-		strlowercase(phdr->strname);
+		siStrLCase(phdr->strname);
 		pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 		if (strcmp(pt->strname, phdr->strname) == 0)
 			return FALSE;
@@ -286,13 +289,14 @@ BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr)
 	else
 		return FALSE;
 
-	strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col, sizeof(P_CELL));
+	strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col + 1, sizeof(P_CELL));
+	++ptbl->tbldata.col;
 	for (i = 0; i < ptbl->tbldata.ln; ++i)
 	{
 		P_CELL pc = NULL;
-		strSetValueMatrix(&ptbl->tbldata, i, ptbl->tbldata.col, &pc, sizeof(P_CELL));
+		strSetValueMatrix(&ptbl->tbldata, i, ptbl->tbldata.col - 1, &pc, sizeof(P_CELL));
 	}
-	++ptbl->tbldata.col;
+	
 	return TRUE;
 }
 
@@ -325,6 +329,7 @@ BOOL siDropTableColumn(P_TABLE ptbl, size_t col)
 	if (NULL == strResizeArrayZ(parrcol, j, sizeof(size_t)))
 		return FALSE;
 
+	free(((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col))->strname);
 	strRemoveItemArrayZ(&ptbl->header, sizeof(TBLHDR), col, TRUE);
 
 	pview = siCreateProjectView(&ptbl->tbldata, parrcol);
@@ -339,6 +344,7 @@ BOOL siDropTableColumn(P_TABLE ptbl, size_t col)
 		}
 
 		strCopyArrayZ(&ptbl->tbldata.arrz, &pview->arrz, sizeof(P_CELL));
+		--ptbl->tbldata.col;
 
 		strDeleteMatrix(pview);
 

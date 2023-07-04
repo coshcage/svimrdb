@@ -9,7 +9,7 @@
 #include <ctype.h> /* Using function tolower. */
 #include "svimrdb.h"
 
-/* Function name: strlowercase
+/* Function name: siStrLCase
  * Description:   Convert a zero terminated string to lower case..
  * Parameter:
  *       str Pointer to the original string.
@@ -17,10 +17,13 @@
  * Caution:       N/A.
  * Tip:           N/A.
  */
-char * strlowercase(char * str)
+char * siStrLCase(char * str)
 {
 	char * s = str;
-	while (*str++)
-		*str = tolower(*str);
-	return s;
+	while (*s)
+	{
+		*s = tolower(*s);
+		++s;
+	}
+	return str;
 }

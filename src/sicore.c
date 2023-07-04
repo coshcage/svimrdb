@@ -35,39 +35,42 @@ static int _sicbfcmp(const void * px, const void * py)
 	size_t i;
 	P_CELL pcx, pcy;
 
-	pcx = **(P_CELL * *)px;
-	pcy = **(P_CELL * *)py;
 
 	for (i = 0; i < _sizCUTTarget; ++i)
 	{
-		switch (pcx->ct)
+		pcx = *((*(P_CELL **)px) + i);
+		pcy = *((*(P_CELL **)py) + i);
+		if (NULL != pcx && NULL != pcy)
 		{
-		case CT_CHAR:
-			r = *(char *)pcx->pdata - *(char *)pcy->pdata;
-			break;
-		case CT_SHORT:
-			r = *(short *)pcx->pdata - *(short *)pcy->pdata;
-			break;
-		case CT_INTEGER:
-			r = *(int *)pcx->pdata - *(int *)pcy->pdata;
-			break;
-		case CT_LONG:
-			r = *(long *)pcx->pdata - *(long *)pcy->pdata;
-			break;
-		case CT_FLOAT:
-			r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
-			break;
-		case CT_DOUBLE:
-			r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
-			break;
-		case CT_STRING:
-			r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
-			break;
+			switch (pcx->ct)
+			{
+			case CT_CHAR:
+				r = *(char *)pcx->pdata - *(char *)pcy->pdata;
+				break;
+			case CT_SHORT:
+				r = *(short *)pcx->pdata - *(short *)pcy->pdata;
+				break;
+			case CT_INTEGER:
+				r = *(int *)pcx->pdata - *(int *)pcy->pdata;
+				break;
+			case CT_LONG:
+				r = *(long *)pcx->pdata - *(long *)pcy->pdata;
+				break;
+			case CT_FLOAT:
+				r = (int)roundf(*(float *)pcx->pdata - *(float *)pcy->pdata);
+				break;
+			case CT_DOUBLE:
+				r = (int)round(*(double *)pcx->pdata - *(double *)pcy->pdata);
+				break;
+			case CT_STRING:
+				r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
+				break;
+			}
+			if (0 == r)
+				continue;
+			else
+				return r;
 		}
-		if (0 == r)
-			continue;
-		else
-			return r;
 	}
 	return r;
 }
