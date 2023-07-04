@@ -50,6 +50,10 @@ static int _sicbfcmpSV(const void * px, const void * py)
 			break;
 		}
 	}
+	else if (NULL == pcx && NULL != pcy)
+		return -1;
+	else if (NULL != pcx && NULL == pcy)
+		return 1;
 	if (bAscend)
 		return r;
 	else

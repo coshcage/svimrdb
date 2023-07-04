@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0000000000L00678
+ * File ID:     0628231947B0000000000L00732
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
@@ -71,6 +71,10 @@ static int _sicbfcmp(const void * px, const void * py)
 			else
 				return r;
 		}
+		else if (NULL == pcx && NULL != pcy)
+			return -1;
+		else if (NULL != pcx && NULL == pcy)
+			return 1;
 	}
 	return r;
 }
