@@ -2,7 +2,7 @@
  * Name:        silock.c
  * Description: Lock functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0704231516F0000000000L00030
+ * File ID:     0704231516F0000000000L00000
  * License:     GPLv2.
  */
 
@@ -17,10 +17,11 @@ typedef enum en_CmpMatHdr
 	CMH_X,
 	CMH_IS,
 	CMH_IX,
-	CMH_SIX
+	CMH_SIX,
+	CMH_NOLOCK
 } CmpMatHdr;
 
-BOOL bCompatibleMatrix[][6] =
+BOOL const bCompatibleMatrix[][6] =
 {
 	{Y,N,Y,N,N,Y},
 	{N,N,N,N,N,Y},

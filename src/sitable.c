@@ -9,6 +9,7 @@
 #include <stdio.h>  /* Using function printf, macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, qsort. */
 #include <string.h> /* Using function strdup. */
+#include <math.h>   /* Using function round, roundf. */
 #include <stdarg.h>
 #include "svimrdb.h"
 
