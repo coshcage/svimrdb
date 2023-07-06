@@ -72,8 +72,7 @@ typedef struct st_LOCK
 /* Alteration type. */
 typedef enum en_AltType
 {
-	AT_NONE = 0,
-	AT_ALTER_CELL,
+	AT_ALTER_CELL = 1,
 	AT_ADD_TUPLE,
 	AT_DEL_TUPLE,
 	AT_ADD_COLUMN,
@@ -94,7 +93,6 @@ typedef struct st_DATALT
 			size_t ln;
 			size_t col;
 			P_CELL before;
-			P_CELL after;
 		} dacell;
 		struct st_DATPL
 		{
@@ -145,5 +143,10 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t col);
 void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col);
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
 BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
+/* Functions for transactions. */
+P_TRANS siBeginTransaction();
+void siCommitTransaction(P_TRANS ptrans);
+void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans);
+void siReleaseAllTransaction();
 
 #endif

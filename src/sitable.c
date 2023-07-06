@@ -204,7 +204,25 @@ P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
 {
 	P_TABLE pr = siCreateTable(ptrans, ptbl->tblname, &ptbl->header);
 	if (NULL != pr)
-		strCopyMatrix(&pr->tbldata, &ptbl->tbldata, sizeof(P_CELL));
+	{
+		if (NULL != strResizeMatrix(&pr->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col, sizeof(P_CELL)))
+		{
+			size_t i, j;
+			pr->tbldata.ln = ptbl->tbldata.ln;
+			pr->tbldata.col = ptbl->tbldata.col;
+			for (i = 0; i < ptbl->tbldata.ln; ++i)
+			{
+				for (j = 0; j < ptbl->tbldata.col; ++j)
+				{
+					P_CELL pc;
+					strGetValueMatrix(&pc, &ptbl->tbldata, i, j, sizeof(P_CELL));
+					if (NULL != pc)
+						pc = siCreateCell(pc->pdata, pc->ct);
+					strSetValueMatrix(&pr->tbldata, i, j, &pc, sizeof(P_CELL));
+				}
+			}
+		}
+	}
 	return pr;
 }
 
@@ -216,7 +234,7 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 	{
 		DATALT da;
 		da.at = AT_DEL_TABLE;
-		da.ptbl = NULL;
+		da.ptbl = ptbl;
 		da.data.datbl = siCopyTable(NULL, ptbl);
 
 		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
@@ -323,7 +341,7 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 
 			queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
 		}
-
+		// TODO problem goes here:
 		strRemoveItemArrayZ(&ptbl->tbldata.arrz, sizeof(P_CELL) * ptbl->tbldata.col, ln, TRUE);
 		--ptbl->tbldata.ln;
 		return TRUE;
@@ -339,7 +357,6 @@ void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, s
 
 	if (NULL != ptrans)
 	{
-		size_t i;
 		DATALT da;
 		da.at = AT_ALTER_CELL;
 		da.ptbl = ptbl;
@@ -350,7 +367,6 @@ void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, s
 			da.data.dacell.before = siCreateCell(pc->pdata, pc->ct);
 		else
 			da.data.dacell.before = NULL;
-		da.data.dacell.after = siCreateCell(pval, ct);
 
 		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
 	}
@@ -363,7 +379,7 @@ void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, s
 
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 {
-	size_t i;
+	size_t i, j;
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
 		P_TBLHDR pt;
@@ -372,7 +388,7 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 		if (strcmp(pt->strname, phdr->strname) == 0)
 			return FALSE;
 	}
-	i = strLevelArrayZ(&ptbl->header);
+	j = i = strLevelArrayZ(&ptbl->header);
 
 	if (NULL != strResizeArrayZ(&ptbl->header, strLevelArrayZ(&ptbl->header) + 1, sizeof(TBLHDR)))
 	{
@@ -391,6 +407,16 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 		P_CELL pc = NULL;
 		strSetValueMatrix(&ptbl->tbldata, i, ptbl->tbldata.col - 1, &pc, sizeof(P_CELL));
 	}
+
+	if (NULL != ptrans)
+	{
+		DATALT da;
+		da.at = AT_ADD_COLUMN;
+		da.ptbl = ptbl;
+		da.data.dacol.sizcol = j;
+
+		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
+	}
 	
 	return TRUE;
 }
@@ -403,6 +429,29 @@ BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 
 	if (col >= ptbl->tbldata.col)
 		return FALSE;
+
+	if (NULL != ptrans)
+	{
+		DATALT da;
+		da.at = AT_DEL_COLUMN;
+		da.ptbl = ptbl;
+		da.data.dacol.sizcol = col;
+		da.data.dacol.hdr = *(TBLHDR *)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col);
+		da.data.dacol.hdr.strname = strdup((*(TBLHDR *)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col)).strname);
+
+		strInitArrayZ(&da.data.dacol.coldat, ptbl->tbldata.ln, sizeof(P_CELL));
+		for (i = 0; i < ptbl->tbldata.ln; ++i)
+		{
+			P_CELL pc;
+			strGetValueMatrix(&pc, &ptbl->tbldata, i, col, sizeof(P_CELL));
+			if (NULL == pc)
+				*(P_CELL *)strLocateItemArrayZ(&da.data.dacol.coldat, sizeof(P_CELL), i) = NULL;
+			else
+				*(P_CELL *)strLocateItemArrayZ(&da.data.dacol.coldat, sizeof(P_CELL), i) = siCreateCell(pc->pdata, pc->ct);
+		}
+
+		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
+	}
 
 	parrcol = strCreateArrayZ(BUFSIZ, sizeof(size_t));
 
