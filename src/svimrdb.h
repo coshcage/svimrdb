@@ -73,31 +73,42 @@ typedef struct st_LOCK
 typedef enum en_AltType
 {
 	AT_NONE = 0,
-	AT_CELL,
-	AT_TUPLE,
-	AT_COLUMN,
-	AT_TABLE
+	AT_ALTER_CELL,
+	AT_ADD_TUPLE,
+	AT_DEL_TUPLE,
+	AT_ADD_COLUMN,
+	AT_DEL_COLUMN,
+	AT_ADD_TABLE,
+	AT_DEL_TABLE
 } AltType;
 
 /* Data alteration. */
-typedef union un_DATALT
+typedef struct st_DATALT
 {
-	struct st_DACELL
+	AltType at;
+	P_TABLE ptbl;
+	union un_DATA
 	{
-		P_CELL brfore;
-		P_CELL after;
-	} dacell;
-	ARRAY_Z datuple;
-	struct st_DACOL
-	{
-		TBLHDR hdr;
-		ARRAY_Z coldat;
-	} dacol;
-	struct st_DATBL
-	{
-		TABLE before;
-		TABLE after;
-	} datable;
+		struct st_DACELL
+		{
+			size_t ln;
+			size_t col;
+			P_CELL before;
+			P_CELL after;
+		} dacell;
+		struct st_DATPL
+		{
+			size_t sizln;
+			ARRAY_Z tupledat;
+		} datpl;
+		struct st_DACOL
+		{
+			size_t sizcol;
+			TBLHDR hdr;
+			ARRAY_Z coldat;
+		} dacol;
+		P_TABLE datbl;
+	} data;
 } DATALT, * P_DATALT;
 
 /* Transactions. */
@@ -125,12 +136,14 @@ void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd);
 P_MATRIX siInstantiateView(P_MATRIX pmtx);
 void siDestoryView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);
-P_TABLE siCreateTable(char * tblname, P_ARRAY_Z parrhdr);
-void siDeleteTable(P_TABLE ptbl);
-BOOL siInsertIntoTable(P_TABLE ptbl, ...);
-BOOL siDeleteFromTable(P_TABLE ptbl, size_t col);
-void siUpdateTableCell(P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col);
-BOOL siAddTableColumn(P_TABLE ptbl, P_TBLHDR phdr);
-BOOL siDropTableColumn(P_TABLE ptbl, size_t col);
+P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
+P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr);
+P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl);
+void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl);
+BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...);
+BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t col);
+void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col);
+BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
+BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
 
 #endif

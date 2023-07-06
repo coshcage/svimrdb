@@ -14,7 +14,12 @@ P_SET_T psetTrans = NULL;
 
 extern int _grpCBFCompareInteger(const void * px, const void * py);
 
-void EnqueueAlt()
+void CreateDatalt()
+{
+
+}
+
+void DeleteDatalt()
 {
 
 }
