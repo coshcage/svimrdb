@@ -6,35 +6,31 @@
  * License:     GPLv2.
  */
 
-#include <stdio.h>  /* Using function printf. */
 #include <stdlib.h> /* Using function malloc, free. */
-#include <string.h> /* Using function strdup. */
-#include <stdarg.h>
 #include "svimrdb.h"
-#include "StoneValley/src/svqueue.h"
 
-typedef enum en_OPType
-{
-	OT_NONE = 0,
 
-} OPType;
+P_SET_T psetTrans = NULL;
 
-typedef struct st_OP
-{
-	OPType type;
-	P_TABLE ptbl;
-	union un_OPDATA
-	{
-		P_CELL prev;
-		P_CELL after;
-	} opdata;
-} OP, * P_OP;
+extern int _grpCBFCompareInteger(const void * px, const void * py);
 
-DEQUE_DL qOperationList = { 0 };
-
-void siBeginTransaction()
+void EnqueueAlt()
 {
 
+}
+
+P_TRANS siBeginTransaction()
+{
+	P_TRANS pt = (P_TRANS) malloc(sizeof(TRANS));
+	if (NULL == pt)
+		return NULL;
+	queInitDL(&pt->qoprlst);
+	setInitT(&pt->setlock);
+	if (NULL == psetTrans)
+		psetTrans = setCreateT();
+	setInsertT(psetTrans, &pt, sizeof(P_TRANS), _grpCBFCompareInteger);
+	return pt;
+	
 }
 
 void siCommitTransaction()

@@ -11,16 +11,6 @@
 #define Y TRUE
 #define N FALSE
 
-typedef enum en_CmpMatHdr
-{
-	CMH_S = 0,
-	CMH_X,
-	CMH_IS,
-	CMH_IX,
-	CMH_SIX,
-	CMH_NOLOCK
-} CmpMatHdr;
-
 BOOL const bCompatibleMatrix[][6] =
 {
 	{Y,N,Y,N,N,Y},
@@ -30,3 +20,13 @@ BOOL const bCompatibleMatrix[][6] =
 	{N,N,Y,N,N,Y},
 	{Y,Y,Y,Y,Y,Y}
 };
+
+void siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
+{
+
+}
+
+void siUnlock(P_TRANS ptrans, void * pobj, LockType lt)
+{
+
+}

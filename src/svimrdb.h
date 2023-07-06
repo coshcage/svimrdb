@@ -11,6 +11,7 @@
 #include "StoneValley/src/svstring.h"
 #include "StoneValley/src/svtree.h"
 #include "StoneValley/src/svset.h"
+#include "StoneValley/src/svqueue.h"
 
 /* Cell type. */
 typedef enum en_CellType
@@ -49,6 +50,62 @@ typedef struct st_TABLE
 	ARRAY_Z header;
 	MATRIX tbldata;
 } TABLE, * P_TABLE;
+
+/* Lock type. */
+typedef enum en_LockType
+{
+	LT_S = 0,
+	LT_X,
+	LT_IS,
+	LT_IX,
+	LT_SIX,
+	LT_NOLOCK
+} LockType;
+
+/* Lock structure. */
+typedef struct st_LOCK
+{
+	void * pobj;
+	LockType lt;
+} LOCK, * P_LOCK;
+
+/* Alteration type. */
+typedef enum en_AltType
+{
+	AT_NONE = 0,
+	AT_CELL,
+	AT_TUPLE,
+	AT_COLUMN,
+	AT_TABLE
+} AltType;
+
+/* Data alteration. */
+typedef union un_DATALT
+{
+	struct st_DACELL
+	{
+		P_CELL brfore;
+		P_CELL after;
+	} dacell;
+	ARRAY_Z datuple;
+	struct st_DACOL
+	{
+		TBLHDR hdr;
+		ARRAY_Z coldat;
+	} dacol;
+	struct st_DATBL
+	{
+		TABLE before;
+		TABLE after;
+	} datable;
+} DATALT, * P_DATALT;
+
+/* Transactions. */
+typedef struct st_TRANS
+{
+	DEQUE_DL qoprlst;
+	SET_T setlock;
+} TRANS, * P_TRANS;
 
 /* Misc functions. */
 char * siStrLCase(char * str);
