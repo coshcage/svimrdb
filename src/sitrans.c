@@ -38,6 +38,7 @@ void siCommitTransaction(P_TRANS ptrans)
 	while (!queIsEmptyDL(&ptrans->qoprlst))
 	{
 		DATALT da;
+		size_t i;
 		queEjectDL(&da, sizeof(DATALT), &ptrans->qoprlst);
 
 		switch (da.at)
@@ -49,12 +50,16 @@ void siCommitTransaction(P_TRANS ptrans)
 
 			break;
 		case AT_DEL_TUPLE:
+			for (i = 0; i < strLevelArrayZ(&da.data.datpl.tupledat); ++i)
+				siDeleteCell((P_CELL *)strLocateItemArrayZ(&da.data.datpl.tupledat, sizeof(P_CELL), i));
 			strFreeArrayZ(&da.data.datpl.tupledat);
 			break;
 		case AT_ADD_COLUMN:
 
 			break;
 		case AT_DEL_COLUMN:
+			for (i = 0; i < strLevelArrayZ(&da.data.dacol.coldat); ++i)
+				siDeleteCell((P_CELL *)strLocateItemArrayZ(&da.data.dacol.coldat, sizeof(P_CELL), i));
 			free(da.data.dacol.hdr.strname);
 			strFreeArrayZ(&da.data.dacol.coldat);
 			break;
