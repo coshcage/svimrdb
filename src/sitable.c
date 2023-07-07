@@ -321,9 +321,9 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 {
 	if (ln < ptbl->tbldata.ln)
 	{
+		size_t i;
 		if (NULL != ptrans)
 		{
-			size_t i;
 			DATALT da;
 			da.at = AT_DEL_TUPLE;
 			da.ptbl = ptbl;
@@ -341,8 +341,18 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 
 			queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
 		}
-		// TODO problem goes here:
-		strRemoveItemArrayZ(&ptbl->tbldata.arrz, sizeof(P_CELL) * ptbl->tbldata.col, ln, TRUE);
+		
+		for (i = 1; i < ptbl->tbldata.col; ++i)
+			siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)));
+
+		memmove
+		(
+			&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
+			&ptbl->tbldata.arrz.pdata[(ln + 1) * sizeof(P_CELL) * ptbl->tbldata.col],
+			(ptbl->tbldata.ln - 1 - ln) * sizeof(P_CELL) * ptbl->tbldata.col
+		);
+
+		strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln - 1, ptbl->tbldata.col, sizeof(P_CELL));
 		--ptbl->tbldata.ln;
 		return TRUE;
 	}
