@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>  /* Using macro BUFSIZ. */
+#include <string.h> /* Using function memcpy, memmove. */
 #include <stdlib.h> /* Using function malloc, free. */
 #include "svimrdb.h"
 
@@ -92,6 +93,8 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 		{
 		case AT_ALTER_CELL:
 			siUpdateTableCell(NULL, da.ptbl, da.data.dacell.before->pdata, da.data.dacell.before->ct, da.data.dacell.ln, da.data.dacell.col);
+			
+			siDeleteCell(&da.data.dacell.before);
 			break;
 		case AT_ADD_TUPLE:
 			siDeleteFromTable(NULL, da.ptbl, da.data.datpl.sizln);
@@ -112,9 +115,19 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 					else
 						i[ppc] = siCreateCell(pc->pdata, pc->ct);
 				}
-				strInsertItemArrayZ(&da.ptbl->tbldata.arrz, &ppc, sizeof(P_CELL) * da.ptbl->tbldata.col, da.data.datpl.sizln);
+
+				memmove
+				(
+					&da.ptbl->tbldata.arrz.pdata[(da.data.datpl.sizln + 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
+					&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
+					(da.ptbl->tbldata.ln - 1 - da.data.datpl.sizln) * sizeof(P_CELL) * da.ptbl->tbldata.col
+				);
+
+				memcpy(&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col], ppc, sizeof(P_CELL) * da.ptbl->tbldata.col);
 				free(ppc);
 			}
+
+			strFreeArrayZ(&da.data.datpl.tupledat);
 			break;
 		case AT_ADD_COLUMN:
 			siDropTableColumn(NULL, da.ptbl, da.data.dacol.sizcol);
@@ -123,6 +136,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			/* Add table header first. */
 			strResizeArrayZ(&da.ptbl->header, strLevelArrayZ(&da.ptbl->header) + 1, sizeof(TBLHDR));
 			strInsertItemArrayZ(&da.ptbl->header, &da.data.dacol.hdr, sizeof(TBLHDR), da.data.dacol.sizcol);
+			(*(P_TBLHDR)strLocateItemArrayZ(&da.ptbl->header, sizeof(TBLHDR), da.data.dacol.sizcol)).strname = strdup(da.data.dacol.hdr.strname);
 			/* Alter table next. */
 			if (NULL != strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln, da.ptbl->tbldata.col + 1, sizeof(P_CELL)))
 			{
@@ -135,6 +149,9 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 					strSetValueMatrix(&da.ptbl->tbldata, i, da.data.dacol.sizcol, &pc, sizeof(P_CELL));
 				}
 			}
+
+			free(da.data.dacol.hdr.strname);
+			strFreeArrayZ(&da.data.dacol.coldat);
 			break;
 		case AT_ADD_TABLE:
 			siDeleteTable(NULL, da.ptbl);
@@ -144,26 +161,31 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			a[0] = (size_t)da.ptbl;
 			a[1] = (size_t)ptr;
 
-			strTraverseLinkedListDC_X(&ptrans->qoprlst.pfirst, NULL, _cbftvsAlterTargetTable, (size_t)a, FALSE);
+			strTraverseLinkedListDC_X(ptrans->qoprlst.pfirst, NULL, _cbftvsAlterTargetTable, (size_t)a, FALSE);
 
-			
 			if (NULL != pparr)
 			{
-				*(P_TABLE *)strLocateItemArrayZ(*pparr, sizeof(P_TABLE), m) = ptr;
+				if (NULL == *pparr)
+					*pparr = strCreateArrayZ(BUFSIZ, sizeof(TBLREF));
+				(*(P_TBLREF)strLocateItemArrayZ(*pparr, sizeof(P_TABLE), m)).pold = da.ptbl;
+				(*(P_TBLREF)strLocateItemArrayZ(*pparr, sizeof(P_TABLE), m)).pnew = ptr;
 				++m;
 				if (m >= strLevelArrayZ(*pparr))
 				{
-					if (NULL == strResizeArrayZ(*pparr, strLevelArrayZ(*pparr) + BUFSIZ, sizeof(size_t)))
+					if (NULL == strResizeArrayZ(*pparr, strLevelArrayZ(*pparr) + BUFSIZ, sizeof(TBLREF)))
 					{
 						m = 0;
 						break;
 					}
 				}
 			}
+
+			siDeleteTable(NULL, da.data.datbl);
 			break;
 		}
 	}
-	siCommitTransaction(ptrans);
+	if (NULL != pparr)
+		strResizeArrayZ(*pparr, m, sizeof(TBLREF));
 }
 
 void siReleaseAllTransaction()

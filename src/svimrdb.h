@@ -116,6 +116,13 @@ typedef struct st_TRANS
 	SET_T setlock;
 } TRANS, * P_TRANS;
 
+/* Table reference. */
+typedef struct st_TBLREF
+{
+	P_TABLE pold;
+	P_TABLE pnew;
+} TBLREF, * P_TBLREF;
+
 /* Misc functions. */
 char * siStrLCase(char * str);
 /* Relational algebraic functions. */
@@ -148,5 +155,7 @@ P_TRANS siBeginTransaction();
 void siCommitTransaction(P_TRANS ptrans);
 void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans);
 void siReleaseAllTransaction();
+
+#define strdup _strdup /* POSIX complient. */
 
 #endif

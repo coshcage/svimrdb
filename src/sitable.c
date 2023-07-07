@@ -13,8 +13,6 @@
 #include <stdarg.h>
 #include "svimrdb.h"
 
-#define strdup _strdup /* POSIX complient. */
-
 static size_t sizSVTarget = 0;
 static BOOL   bAscend = TRUE;
 
@@ -327,6 +325,8 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 			DATALT da;
 			da.at = AT_DEL_TUPLE;
 			da.ptbl = ptbl;
+
+			da.data.datpl.sizln = ln;
 
 			strInitArrayZ(&da.data.datpl.tupledat, strLevelArrayZ(&ptbl->header), sizeof(P_CELL));
 			for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
