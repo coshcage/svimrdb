@@ -28,7 +28,6 @@ P_TRANS siBeginTransaction()
 		psetTrans = setCreateT();
 	setInsertT(psetTrans, &pt, sizeof(P_TRANS), _grpCBFCompareInteger);
 	return pt;
-	
 }
 
 void siCommitTransaction(P_TRANS ptrans)

@@ -155,6 +155,9 @@ P_TRANS siBeginTransaction();
 void siCommitTransaction(P_TRANS ptrans);
 void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans);
 void siReleaseAllTransaction();
+/* Lock functions. */
+BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
+void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
 #define strdup _strdup /* POSIX complient. */
 
