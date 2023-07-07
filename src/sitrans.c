@@ -90,6 +90,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 		return;
 	while (! queIsEmptyDL(&ptrans->qoprlst))
 	{
+		size_t i;
 		DATALT da;
 		P_CELL * ppc;
 		queEjectDL(&da, sizeof(DATALT), &ptrans->qoprlst);
@@ -110,7 +111,6 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			ppc = (P_CELL *)malloc(sizeof(P_CELL) * da.ptbl->tbldata.col);
 			if (ppc)
 			{
-				size_t i;
 				for (i = 0; i < strLevelArrayZ(&da.data.datpl.tupledat); ++i)
 				{
 					P_CELL pc;
@@ -132,6 +132,9 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 				free(ppc);
 			}
 
+			for (i = 0; i < strLevelArrayZ(&da.data.datpl.tupledat); ++i)
+				siDeleteCell((P_CELL *)strLocateItemArrayZ(&da.data.datpl.tupledat, sizeof(P_CELL), i));
+
 			strFreeArrayZ(&da.data.datpl.tupledat);
 			break;
 		case AT_ADD_COLUMN:
@@ -150,10 +153,22 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 				for (i = 0; i < da.ptbl->tbldata.ln; ++i)
 				{
 					P_CELL pc;
+					memmove
+					(
+						(P_CELL *)strGetValueMatrix(NULL, &da.ptbl->tbldata, i, da.data.dacol.sizcol + 1, sizeof(P_CELL)),
+						(P_CELL *)strGetValueMatrix(NULL, &da.ptbl->tbldata, i, da.data.dacol.sizcol, sizeof(P_CELL)),
+						sizeof(P_CELL) * (da.ptbl->tbldata.col - 1 - da.data.dacol.sizcol)
+					);
+
 					pc = *(P_CELL *)strLocateItemArrayZ(&da.data.dacol.coldat, sizeof(P_CELL), i);
+					if (NULL != pc)
+						pc = siCreateCell(pc->pdata, pc->ct);
 					strSetValueMatrix(&da.ptbl->tbldata, i, da.data.dacol.sizcol, &pc, sizeof(P_CELL));
 				}
 			}
+			
+			for (i = 0; i < strLevelArrayZ(&da.data.dacol.coldat); ++i)
+				siDeleteCell((P_CELL *)strLocateItemArrayZ(&da.data.dacol.coldat, sizeof(P_CELL), i));
 
 			free(da.data.dacol.hdr.strname);
 			strFreeArrayZ(&da.data.dacol.coldat);
@@ -189,7 +204,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			break;
 		}
 	}
-	if (NULL != pparr)
+	if (NULL != pparr && 0 != m)
 		strResizeArrayZ(*pparr, m, sizeof(TBLREF));
 }
 
