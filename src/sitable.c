@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0708231121L00642
+ * File ID:     0628231947C0708231121L00657
  * License:     GPLv2.
  */
 
@@ -359,27 +359,42 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 		++ptbl->tbldata.ln;
 		for (i = 0; i < ptbl->header.num; ++i)
 		{
+			union un_CellData
+			{
+				char   c;
+				short  s;
+				int    i;
+				long   l;
+				float  f;
+				double d;
+			} cd;
 			P_CELL pc;
 			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			switch (pt->ct)
 			{
 			case CT_CHAR:
-				pc = siCreateCell(&va_arg(arg, char), pt->ct);
+				cd.c = va_arg(arg, char);
+				pc = siCreateCell(&cd.c, pt->ct);
 				break;
 			case CT_SHORT:
-				pc = siCreateCell(&va_arg(arg, short), pt->ct);
+				cd.s = va_arg(arg, short);
+				pc = siCreateCell(&cd.s, pt->ct);
 				break;
 			case CT_INTEGER:
-				pc = siCreateCell(&va_arg(arg, int), pt->ct);
+				cd.i = va_arg(arg, int);
+				pc = siCreateCell(&cd.i, pt->ct);
 				break;
 			case CT_LONG:
-				pc = siCreateCell(&va_arg(arg, long), pt->ct);
+				cd.l = va_arg(arg, long);
+				pc = siCreateCell(&cd.l, pt->ct);
 				break;
 			case CT_FLOAT:
-				pc = siCreateCell(&va_arg(arg, float), pt->ct);
+				cd.f = va_arg(arg, float);
+				pc = siCreateCell(&cd.f, pt->ct);
 				break;
 			case CT_DOUBLE:
-				pc = siCreateCell(&va_arg(arg, double), pt->ct);
+				cd.d = va_arg(arg, double);
+				pc = siCreateCell(&cd.d, pt->ct);
 				break;
 			case CT_STRING:
 				pc = siCreateCell(va_arg(arg, char *), pt->ct);
