@@ -29,15 +29,15 @@ typedef enum en_CellType
 /* A cell. */
 typedef struct st_CELL
 {
-	CellType ct;
-	void * pdata;
+	CellType ct;  /* Cell data type. */
+	void * pdata; /* Cell data pointer. */
 } CELL, * P_CELL;
 
 /* Table header element. */
 typedef struct st_TBLHDR
 {
-	CellType ct;
-	char * strname;
+	CellType ct;    /* Data type. */
+	char * strname; /* Column name. */
 } TBLHDR, * P_TBLHDR;
 
 /* Selection function. */
@@ -46,9 +46,9 @@ typedef BOOL(*SICBF_SELECT)(P_CELL * pitem, size_t param);
 /* Table structure. */
 typedef struct st_TABLE
 {
-	char * tblname;
-	ARRAY_Z header;
-	MATRIX tbldata;
+	char * tblname; /* Table name. */
+	ARRAY_Z header; /* Table header. */
+	MATRIX tbldata; /* Table data. */
 } TABLE, * P_TABLE;
 
 /* Lock type. */
@@ -65,8 +65,8 @@ typedef enum en_LockType
 /* Lock structure. */
 typedef struct st_LOCK
 {
-	void * pobj;
-	LockType lt;
+	void * pobj; /* Locking object. */
+	LockType lt; /* Lock type. */
 } LOCK, * P_LOCK;
 
 /* Alteration type. */
@@ -84,8 +84,8 @@ typedef enum en_AltType
 /* Data alteration. */
 typedef struct st_DATALT
 {
-	AltType at;
-	P_TABLE ptbl;
+	AltType at;   /* Alteration type. */
+	P_TABLE ptbl; /* Target table. */
 	union un_DATA
 	{
 		struct st_DACELL
@@ -112,8 +112,8 @@ typedef struct st_DATALT
 /* Transactions. */
 typedef struct st_TRANS
 {
-	DEQUE_DL qoprlst;
-	SET_T setlock;
+	DEQUE_DL qoprlst; /* Operation list. */
+	SET_T setlock;    /* Lock set. */
 } TRANS, * P_TRANS;
 
 /* Table reference. */
@@ -159,6 +159,6 @@ void siReleaseAllTransaction();
 BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
-#define strdup _strdup /* POSIX complient. */
+#define strdup _strdup /* POSIX complient for visual C compiler. */
 
 #endif

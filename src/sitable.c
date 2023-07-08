@@ -2,20 +2,29 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0000000000L00000
+ * File ID:     0628231947C0708231121L00642
  * License:     GPLv2.
  */
 
 #include <stdio.h>  /* Using function printf, macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, qsort. */
-#include <string.h> /* Using function strdup. */
+#include <string.h> /* Using function strdup, memmove. */
 #include <math.h>   /* Using function round, roundf. */
 #include <stdarg.h>
 #include "svimrdb.h"
 
-static size_t sizSVTarget = 0;
-static BOOL   bAscend = TRUE;
+static size_t sizSVTarget = 0; /* Variable for sorting column of a table. */
+static BOOL   bAscend = TRUE;  /* Ascend or descend for TRUE or FALSE respectively. */
 
+/* Attention:     This Is An Internal Function. No Interface for Library Users.
+ * Function name: _sicbfcmpSV
+ * Description:   This function is used to compare cells of a view.
+ * Parameters:
+ *         px Pointer to pointer of P_CELL.
+ *         py Pointer to pointer of P_CELL.
+ * Return value:  > 0, < 0 and ==0 (Represents equal).
+ * Caution:   This function is not reentrant.
+ */
 static int _sicbfcmpSV(const void * px, const void * py)
 {
 	int r = 0;
@@ -59,6 +68,16 @@ static int _sicbfcmpSV(const void * px, const void * py)
 		return -1 * r;
 }
 
+/* Function name: siSortView
+ * Description:   Sort view.
+ * Parameter:
+ *      pmtx Pointer to a view.
+ *       col Column you want to sort. Starts from 0.
+ *      ascd TRUE for ascend. FALSE for descend.
+ * Return value:  N/A.
+ * Caution:       Parameter pmtx must be allocated first.
+ * Tip:           N/A.
+ */
 void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
 {
 	sizSVTarget = col;
@@ -66,6 +85,14 @@ void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
 	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _sicbfcmpSV);
 }
 
+/* Function name: siInstantiateView
+ * Description:   Initialize a view and its cell.
+ * Parameter:
+ *      pmtx Pointer to a view.
+ * Return value:  A new allocated view with all initialized cell.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 P_MATRIX siInstantiateView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
@@ -93,6 +120,14 @@ P_MATRIX siInstantiateView(P_MATRIX pmtx)
 	return NULL;
 }
 
+/* Function name: siDestoryView
+ * Description:   Uninitialize a view and its cell.
+ * Parameter:
+ *      pmtx Pointer to a view.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 void siDestoryView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
@@ -110,6 +145,14 @@ void siDestoryView(P_MATRIX pmtx)
 	}
 }
 
+/* Function name: siPrintView
+ * Description:   Print a view to stdout.
+ * Parameter:
+ *      pmtx Pointer to a view.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 void siPrintView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
@@ -156,6 +199,14 @@ void siPrintView(P_MATRIX pmtx)
 	}
 }
 
+/* Function name: siCreateViewOfTable
+ * Description:   Create a view of table.
+ * Parameter:
+ *      ptbl Pointer to a table.
+ * Return value:  Pointer to a view.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 P_MATRIX siCreateViewOfTable(P_TABLE ptbl)
 {
 	P_MATRIX pmtx = strCreateMatrix(ptbl->tbldata.ln, ptbl->tbldata.col, sizeof(P_CELL));
@@ -164,6 +215,17 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl)
 	return pmtx;
 }
 
+/* Function name: siCreateTable
+ * Description:   Print a view to stdout.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *   tblname Pointer to a string that indicates table name.
+ *   parrhdr Pointer to an ARRAY_Z that contains table header description.
+ *           Each element of this ARRAY_Z is TBLHDR.
+ * Return value:  Pointer to a table.
+ * Caution:       Parameter parrhdr must be allocated first..
+ * Tip:           N/A.
+ */
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 {
 	P_TABLE ptbl = (P_TABLE)malloc(sizeof(TABLE));
@@ -198,6 +260,15 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 	return ptbl;
 }
 
+/* Function name: siCopyTable
+ * Description:   Copy and recreate a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table.
+ * Return value:  Pointer to a new table.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
 {
 	P_TABLE pr = siCreateTable(ptrans, ptbl->tblname, &ptbl->header);
@@ -224,6 +295,15 @@ P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
 	return pr;
 }
 
+/* Function name: siDeleteTable
+ * Description:   Delete a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to delete.
+ * Return value:  N/A.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 {
 	size_t i;
@@ -256,6 +336,16 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 	
 }
 
+/* Function name: siInsertIntoTable
+ * Description:   Insert a tuple into a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to insert.
+ *       ... Parameters you want to insert.
+ * Return value:  TRUE insertion succeeded. FALSE insertion failed.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 {
 	size_t i, j;
@@ -315,6 +405,16 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 	return FALSE;
 }
 
+/* Function name: siDeleteFromTable
+ * Description:   Delete a tuple from a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to delete from.
+ *        ln Row number you want to delete. Starts from 0.
+ * Return value:  TRUE deletion succeeded. FALSE deletion failed.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 {
 	if (ln < ptbl->tbldata.ln)
@@ -359,6 +459,19 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 	return FALSE;
 }
 
+/* Function name: siUpdateTableCell
+ * Description:   Update a cell.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table that contains the certain cell.
+ *      pval Pointer to the new cell data.
+ *        ct Cell type.
+ *        ln Cell row number. Starts from 0.
+ *       col Cel column number. Starts from 0.
+ * Return value:  N/A.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col)
 {
 	P_CELL pc;
@@ -387,6 +500,16 @@ void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, s
 	strSetValueMatrix(&ptbl->tbldata, ln, col, &pc, sizeof(P_CELL));
 }
 
+/* Function name: siAddTableColumn
+ * Description:   Add a column of a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to operate.
+ *      phdr Pointer to a TBLHDR structure that contains new column description.
+ * Return value:  TRUE adding succeeded. FALSE adding failed.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 {
 	size_t i, j;
@@ -431,6 +554,16 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 	return TRUE;
 }
 
+/* Function name: siDropTableColumn
+ * Description:   Delete a column of a table.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to operate.
+ *       col Column number of the table. Starts from 0.
+ * Return value:  TRUE dropping succeeded. FALSE dropping failed.
+ * Caution:       Parameter ptbl must be allocated first..
+ * Tip:           N/A.
+ */
 BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 {
 	size_t i, j;

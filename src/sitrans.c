@@ -11,11 +11,9 @@
 #include <stdlib.h> /* Using function malloc, free. */
 #include "svimrdb.h"
 
-
 P_SET_T psetTrans = NULL;
 
 extern int _grpCBFCompareInteger(const void * px, const void * py);
-
 
 P_TRANS siBeginTransaction()
 {
