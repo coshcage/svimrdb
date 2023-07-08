@@ -2,7 +2,7 @@
  * Name:        simisc.c
  * Description: Misc functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0703231856E0000000000L00030
+ * File ID:     0703231856E0708231210L00030
  * License:     GPLv2.
  */
 

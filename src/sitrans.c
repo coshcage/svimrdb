@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0000000000L00000
+ * File ID:     0702231427D0708231210L00248
  * License:     GPLv2.
  */
 
@@ -11,10 +11,19 @@
 #include <stdlib.h> /* Using function malloc, free. */
 #include "svimrdb.h"
 
+/* A set of transactions. */
 P_SET_T psetTrans = NULL;
 
+/* Compare function declaration. */
 extern int _grpCBFCompareInteger(const void * px, const void * py);
 
+/* Function name: siBeginTransaction
+ * Description:   Starts a transaction.
+ * Parameter:     N/A.
+ * Return value:  Pointer to a new transaction.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 P_TRANS siBeginTransaction()
 {
 	P_TRANS pt = (P_TRANS) malloc(sizeof(TRANS));
@@ -28,6 +37,14 @@ P_TRANS siBeginTransaction()
 	return pt;
 }
 
+/* Function name: siCommitTransaction
+ * Description:   Commit transaction.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 void siCommitTransaction(P_TRANS ptrans)
 {
 	if (NULL == ptrans)
@@ -78,6 +95,17 @@ static int _cbftvsAlterTargetTable(void * pitem, size_t param)
 	return CBF_CONTINUE;
 }
 
+/* Function name: siRollbackTransaction
+ * Description:   Rollback transaction.
+ * Parameter:
+ *     pparr Pointer to an array that used to contain altered table pointers.
+ *           Each element of this array is a TBLREF structure.
+ *           Input NULL to dismiss this array.
+ *    ptrans Pointer to a transaction.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 {
 	size_t a[2];
@@ -205,6 +233,13 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 		strResizeArrayZ(*pparr, m, sizeof(TBLREF));
 }
 
+/* Function name: siReleaseAllTransaction
+ * Description:   Release all transaction.
+ * Parameter:     N/A.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           Call this function before program terminate to release memory.
+ */
 void siReleaseAllTransaction()
 {
 	setDeleteT(psetTrans);
