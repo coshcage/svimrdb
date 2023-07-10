@@ -24,7 +24,7 @@ static BOOL const bCompatibleMatrix[][6] =
 extern P_SET_T psetTrans; /* Transactions. */
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
- * Function name: _sicmfcmpLock
+ * Function name: _sicbfcmpLock
  * Description:   This function is used to compare locks.
  * Parameters:
  *         px Pointer to a LOCK structure.
@@ -32,7 +32,7 @@ extern P_SET_T psetTrans; /* Transactions. */
  * Return value:  > 0, < 0 and ==0 (Represents equal).
  * Caution:   N/A.
  */
-static int _sicmfcmpLock(const void * px, const void * py)
+static int _sicbfcmpLock(const void * px, const void * py)
 {
 	P_LOCK plx, ply;
 	plx = (P_LOCK)px;
@@ -121,7 +121,7 @@ BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
 			return FALSE;
 	}
 
-	setInsertT(&ptrans->setlock, &l, sizeof(LOCK), _sicmfcmpLock);
+	setInsertT(&ptrans->setlock, &l, sizeof(LOCK), _sicbfcmpLock);
 	return TRUE;
 }
 
@@ -140,5 +140,5 @@ void siUnlock(P_TRANS ptrans, void * pobj, LockType lt)
 	LOCK l;
 	l.pobj = pobj;
 	l.lt = lt;
-	setRemoveT(&ptrans->setlock, &l, sizeof(LOCK), _sicmfcmpLock);
+	setRemoveT(&ptrans->setlock, &l, sizeof(LOCK), _sicbfcmpLock);
 }
