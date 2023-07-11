@@ -49,8 +49,8 @@ int main()
 
 	siDeleteTable(ptrans, ptbl);
 
-	siUnlock(ptrans, ptbl, LT_X);
-	siUnlock(ptrans, ptbl, LT_S);
+	// siUnlock(ptrans, ptbl, LT_X);
+	// siUnlock(ptrans, ptbl, LT_S);
 
 	siCommitTransaction(ptrans);
 	
