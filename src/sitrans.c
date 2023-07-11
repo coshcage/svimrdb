@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0708231606L00252
+ * File ID:     0702231427D0711231418L00254
  * License:     GPLv2.
  */
 
@@ -86,6 +86,7 @@ void siCommitTransaction(P_TRANS ptrans)
 		}
 	}
 	setRemoveT(psetTrans, &ptrans, sizeof(P_TRANS), _grpCBFCompareInteger);
+	setFreeT(&ptrans->setlock);
 	free(ptrans);
 }
 
@@ -234,6 +235,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 		strResizeArrayZ(*pparr, m, sizeof(TBLREF));
 
 	setRemoveT(psetTrans, &ptrans, sizeof(P_TRANS), _grpCBFCompareInteger);
+	setFreeT(&ptrans->setlock);
 	free(ptrans);
 }
 
