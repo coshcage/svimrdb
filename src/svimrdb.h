@@ -16,7 +16,7 @@
 /* Cell type. */
 typedef enum en_CellType
 {
-	CT_NONE,
+	CT_NULL,
 	CT_CHAR,
 	CT_SHORT,
 	CT_INTEGER,

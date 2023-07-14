@@ -9,6 +9,16 @@
 #include <string.h> /* Using funtion strdup. */
 #include <stdlib.h> /* Using function malloc. */
 
+/* DB Table file structure.
+ * db for magical number.
+ * 1 table header count.
+ * CT_INTEGER table header.
+ * number\0 table column name
+ * xcell.ct CT_INTEGER XCELL.
+ * xcell.fpos 0x00000000 XCELL.
+ * 0x12345678 data.
+ */
+
 void _siReadString(char * buf, FILE * fp)
 {
 	size_t i = 0;
@@ -35,7 +45,10 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 {
 	if (NULL != ptbl && NULL != fp)
 	{
+		XCELL xc = { 0 };
+		P_CELL * ppc;
 		size_t i, j;
+		long oldl, curl;
 
 		fseek(fp, lpos, SEEK_SET);
 
@@ -61,8 +74,58 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 		fwrite(&ptbl->tbldata.ln, sizeof(size_t), 1, fp);
 		fwrite(&ptbl->tbldata.col, sizeof(size_t), 1, fp);
 
-		// TODO:
+		oldl = ftell(fp);
 
+		/* Fill xcell. */
+		for (i = 0; i < ptbl->tbldata.ln * ptbl->tbldata.col; ++i)
+			fwrite(&xc, sizeof(XCELL), 1, fp);
+
+		/* Fill content. */
+		ppc = (P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, 0, 0, sizeof(P_CELL));
+		for (i = 0; i < ptbl->tbldata.ln * ptbl->tbldata.col; ++i)
+		{
+			curl = ftell(fp);
+
+			fseek(fp, oldl + i * sizeof(XCELL), SEEK_SET);
+			if (NULL == *ppc)
+				xc.ct = CT_NULL;
+			else
+				xc.ct = (*ppc)->ct;
+			xc.fpos = curl;
+			fwrite(&xc, sizeof(XCELL), 1, fp);
+
+			fseek(fp, curl, SEEK_SET);
+
+			switch (xc.ct)
+			{
+			case CT_NULL:
+				
+				break;
+			case CT_CHAR:
+				fwrite((*ppc)->pdata, sizeof(char), 1, fp);
+				break;
+			case CT_SHORT:
+				fwrite((*ppc)->pdata, sizeof(short), 1, fp);
+				break;
+			case CT_INTEGER:
+				fwrite((*ppc)->pdata, sizeof(int), 1, fp);
+				break;
+			case CT_LONG:
+				fwrite((*ppc)->pdata, sizeof(long), 1, fp);
+				break;
+			case CT_FLOAT:
+				fwrite((*ppc)->pdata, sizeof(float), 1, fp);
+				break;
+			case CT_DOUBLE:
+				fwrite((*ppc)->pdata, sizeof(double), 1, fp);
+				break;
+			case CT_STRING:
+				_siWriteString((char *)(*ppc)->pdata, fp);
+				break;
+			}
+
+			++ppc;
+		}
 	}
 }
 
