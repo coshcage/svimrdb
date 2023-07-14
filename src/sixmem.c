@@ -6,7 +6,8 @@
  * License:     GPLv2.
  */
 #include "sixmem.h"
-#include <string.h>
+#include <string.h> /* Using funtion strdup. */
+#include <stdlib.h> /* Using function malloc. */
 
 void _siReadString(char * buf, FILE * fp)
 {
@@ -69,7 +70,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 {
 	if (NULL != fp)
 	{
-		P_TABLE ptbl = malloc(sizeof(TABLE));
+		P_TABLE ptbl = (P_TABLE) malloc(sizeof(TABLE));
 
 		char magic[2] = { 0 };
 		size_t i, j, l, m;
