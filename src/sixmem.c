@@ -2,7 +2,7 @@
  * Name:        sixmem.h
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0000000000L00000
+ * File ID:     0714231200H0715231343L00277
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -19,6 +19,15 @@
  * 0x12345678 data.
  */
 
+ /* Attention:     This Is An Internal Function. No Interface for Library Users.
+  * Function name: _siReadString
+  * Description:   Read string from file.
+  * Parameters:
+  *        buf Pointer to a string buffer.
+  *         fp Pointer to a file.
+  * Return value:  N/A.
+  * Caution:       N/A.
+  */
 void _siReadString(char * buf, FILE * fp)
 {
 	size_t i = 0;
@@ -30,6 +39,15 @@ void _siReadString(char * buf, FILE * fp)
 	buf[i] = '\0';
 }
 
+/* Attention:     This Is An Internal Function. No Interface for Library Users.
+ * Function name: _siWriteString
+ * Description:   Write string to a file.
+ * Parameters:
+ *        str Pointer to a string.
+ *         fp Pointer to a file.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ */
 void _siWriteString(char * str, FILE * fp)
 {
 	while (*str)
@@ -41,6 +59,16 @@ void _siWriteString(char * str, FILE * fp)
 	fputc(*str, fp);
 }
 
+/* Function name: siSaveTable
+ * Description:   Save table to a file.
+ * Parameters:
+ *         fp Pointer to a file.
+ *       lpos Start position of the file.
+ *       ptbl Pointer to a table.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 {
 	if (NULL != ptbl && NULL != fp)
@@ -55,6 +83,9 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 		/* Write magic number. */
 		fputc('d', fp);
 		fputc('b', fp);
+
+		/* Write table name. */
+		_siWriteString(ptbl->tblname, fp);
 
 		/* Write table header count. */
 		fwrite(&ptbl->header.num, sizeof(size_t), 1, fp);
@@ -129,6 +160,15 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 	}
 }
 
+/* Function name: siLoadTable
+ * Description:   Load data to a table.
+ * Parameters:
+ *         fp Pointer to a file.
+ *       lpos Start position of the file.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
 P_TABLE siLoadTable(FILE * fp, long lpos)
 {
 	if (NULL != fp)
@@ -148,6 +188,11 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			XCELL xc;
 			P_CELL * ppc;
 			char buf[BUFSIZ] = { 0 };
+			
+			/* Read table name. */
+			_siReadString(buf, fp);
+			ptbl->tblname = strdup(buf);
+
 			/* Read table header count. */
 			fread(&j, sizeof(size_t), 1, fp);
 
@@ -168,7 +213,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			fread(&l, sizeof(size_t), 1, fp);
 			fread(&m, sizeof(size_t), 1, fp);
 
-			strResizeMatrix(&ptbl->tbldata, l, m, sizeof(P_CELL));
+			strInitMatrix(&ptbl->tbldata, l, m, sizeof(P_CELL));
 			ppc = (P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, 0, 0, sizeof(P_CELL));
 
 			for (i = 0; i < l * m; ++i)
