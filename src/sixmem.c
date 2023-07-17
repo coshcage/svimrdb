@@ -2,7 +2,7 @@
  * Name:        sixmem.h
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0715231343L00277
+ * File ID:     0714231200H0717231619L00282
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -173,7 +173,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 {
 	if (NULL != fp)
 	{
-		P_TABLE ptbl = (P_TABLE) malloc(sizeof(TABLE));
+		P_TABLE ptbl = NULL;
 
 		char magic[2] = { 0 };
 		size_t i, j, l, m;
@@ -182,13 +182,18 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 
 		/* Read magic number. */
 		fread(magic, sizeof(char), 2, fp);
-		if ('d' == magic[0] && 'b' == magic[1] && NULL != ptbl)
+		if ('d' == magic[0] && 'b' == magic[1])
 		{
 			long oldl;
 			XCELL xc;
 			P_CELL * ppc;
 			char buf[BUFSIZ] = { 0 };
 			
+			ptbl = (P_TABLE) malloc(sizeof(TABLE));
+			
+			if (NULL == ptbl)
+				return NULL;
+
 			/* Read table name. */
 			_siReadString(buf, fp);
 			ptbl->tblname = strdup(buf);
