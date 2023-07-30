@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0708231123L00165
+ * File ID:     0628231947A0708231123L00168
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
@@ -12,6 +12,9 @@
 #include "StoneValley/src/svtree.h"
 #include "StoneValley/src/svset.h"
 #include "StoneValley/src/svqueue.h"
+
+ /* Library version. */
+#define SI_LIB_VER "1.0.0.0"
 
 /* Cell type. */
 typedef enum en_CellType
