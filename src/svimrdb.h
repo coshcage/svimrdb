@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0708231123L00168
+ * File ID:     0628231947A0708231123L00165
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
@@ -12,9 +12,7 @@
 #include "StoneValley/src/svtree.h"
 #include "StoneValley/src/svset.h"
 #include "StoneValley/src/svqueue.h"
-
- /* Library version. */
-#define SI_LIB_VER "1.0.0.0"
+#include "StoneValley/src/svhash.h"
 
 /* Cell type. */
 typedef enum en_CellType
@@ -26,7 +24,8 @@ typedef enum en_CellType
 	CT_LONG,
 	CT_FLOAT,
 	CT_DOUBLE,
-	CT_STRING
+	CT_STRING,
+	CT_WSTRING
 } CellType;
 
 /* A cell. */
@@ -36,11 +35,22 @@ typedef struct st_CELL
 	void * pdata; /* Cell data pointer. */
 } CELL, * P_CELL;
 
+/* Column restriction. */
+typedef enum en_ColRstct
+{
+	CR_NONE,
+	CR_NOT_NULL,
+	CR_UNIQUE,
+	CR_PRIMARY_KEY = CR_NOT_NULL + CR_UNIQUE /* Not null unique. */
+} ColRstct;
+
 /* Table header element. */
 typedef struct st_TBLHDR
 {
-	CellType ct;    /* Data type. */
-	char * strname; /* Column name. */
+	CellType ct;     /* Data type. */
+	char * strname;  /* Column name. */
+	ColRstct cr;     /* Restriction. */
+	P_HSHTBL_C phsh; /* Hash table for searching. */
 } TBLHDR, * P_TBLHDR;
 
 /* Selection function. */
@@ -128,6 +138,12 @@ typedef struct st_TBLREF
 
 /* Misc functions. */
 char * siStrLCase(char * str);
+size_t siHashChar(const void * pkey);
+size_t siHashShort(const void * pkey);
+size_t siHashInt(const void * pkey);
+size_t siHashLong(const void * pkey);
+size_t siHashFloat(const void * pkey);
+size_t siHashDouble(const void * pkey);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
@@ -144,13 +160,14 @@ void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd);
 P_MATRIX siInstantiateView(P_MATRIX pmtx);
 void siDestoryView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);
+ptrdiff_t siGetColumnByString(P_TABLE ptbl, char * strname);
 P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr);
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl);
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl);
 BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...);
 BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t col);
-void siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, CellType ct, size_t ln, size_t col);
+BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col);
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
 BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
 /* Functions for transactions. */
@@ -162,6 +179,7 @@ void siReleaseAllTransaction();
 BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
+#define BKSNUM 1021 /* 1021 is a prime. */
 #define strdup _strdup /* POSIX complient for visual C compiler. */
 
 #endif

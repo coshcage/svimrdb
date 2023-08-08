@@ -120,12 +120,14 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 		size_t i;
 		DATALT da;
 		P_CELL * ppc;
+		P_TBLHDR pt;
 		queEjectDL(&da, sizeof(DATALT), &ptrans->qoprlst);
 
 		switch (da.at)
 		{
 		case AT_ALTER_CELL:
-			siUpdateTableCell(NULL, da.ptbl, da.data.dacell.before->pdata, da.data.dacell.before->ct, da.data.dacell.ln, da.data.dacell.col);
+			
+			siUpdateTableCell(NULL, da.ptbl, da.data.dacell.before->pdata, da.data.dacell.ln, da.data.dacell.col);
 			
 			siDeleteCell(&da.data.dacell.before);
 			break;
@@ -134,7 +136,6 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			break;
 		case AT_DEL_TUPLE:
 			strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln + 1, da.ptbl->tbldata.col, sizeof(P_CELL));
-			++da.ptbl->tbldata.ln;
 			ppc = (P_CELL *)malloc(sizeof(P_CELL) * da.ptbl->tbldata.col);
 			if (ppc)
 			{
@@ -142,10 +143,44 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 				{
 					P_CELL pc;
 					pc = *(P_CELL *)strLocateItemArrayZ(&da.data.datpl.tupledat, sizeof(P_CELL), i);
+
+					pt = strLocateItemArrayZ(&da.ptbl->header, sizeof(TBLHDR), i);
+
 					if (NULL == pc)
 						i[ppc] = NULL;
 					else
 						i[ppc] = siCreateCell(pc->pdata, pc->ct);
+
+					if (NULL != pt->phsh)
+					{
+						switch (pt->cr)
+						{
+						case CR_UNIQUE:
+						case CR_PRIMARY_KEY:
+							switch (pt->ct)
+							{
+							case CT_CHAR:
+								hshInsertC(pt->phsh, siHashChar, pc->pdata, sizeof(char));
+								break;
+							case CT_SHORT:
+								hshInsertC(pt->phsh, siHashShort, pc->pdata, sizeof(short));
+								break;
+							case CT_INTEGER:
+								hshInsertC(pt->phsh, siHashInt, pc->pdata, sizeof(int));
+								break;
+							case CT_LONG:
+								hshInsertC(pt->phsh, siHashLong, pc->pdata, sizeof(long));
+								break;
+							case CT_FLOAT:
+								hshInsertC(pt->phsh, siHashFloat, pc->pdata, sizeof(float));
+								break;
+							case CT_DOUBLE:
+								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
+								break;
+							}
+							break;
+						}
+					}
 				}
 
 				memmove
@@ -171,12 +206,20 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			/* Add table header first. */
 			strResizeArrayZ(&da.ptbl->header, strLevelArrayZ(&da.ptbl->header) + 1, sizeof(TBLHDR));
 			strInsertItemArrayZ(&da.ptbl->header, &da.data.dacol.hdr, sizeof(TBLHDR), da.data.dacol.sizcol);
-			(*(P_TBLHDR)strLocateItemArrayZ(&da.ptbl->header, sizeof(TBLHDR), da.data.dacol.sizcol)).strname = strdup(da.data.dacol.hdr.strname);
+			pt = strLocateItemArrayZ(&da.ptbl->header, sizeof(TBLHDR), da.data.dacol.sizcol);
+			pt->strname = strdup(da.data.dacol.hdr.strname);
+
+			switch (da.data.dacol.hdr.cr)
+			{
+			case CR_UNIQUE:
+			case CR_PRIMARY_KEY:
+				pt->phsh = hshCreateC(BKSNUM);
+				break;
+			}
 			/* Alter table next. */
 			if (NULL != strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln, da.ptbl->tbldata.col + 1, sizeof(P_CELL)))
 			{
 				size_t i;
-				++da.ptbl->tbldata.col;
 				for (i = 0; i < da.ptbl->tbldata.ln; ++i)
 				{
 					P_CELL pc;
@@ -191,6 +234,37 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 					if (NULL != pc)
 						pc = siCreateCell(pc->pdata, pc->ct);
 					strSetValueMatrix(&da.ptbl->tbldata, i, da.data.dacol.sizcol, &pc, sizeof(P_CELL));
+
+					if (NULL != pt->phsh)
+					{
+						switch (pt->cr)
+						{
+						case CR_UNIQUE:
+						case CR_PRIMARY_KEY:
+							switch (pt->ct)
+							{
+							case CT_CHAR:
+								hshInsertC(pt->phsh, siHashChar, pc->pdata, sizeof(char));
+								break;
+							case CT_SHORT:
+								hshInsertC(pt->phsh, siHashShort, pc->pdata, sizeof(short));
+								break;
+							case CT_INTEGER:
+								hshInsertC(pt->phsh, siHashInt, pc->pdata, sizeof(int));
+								break;
+							case CT_LONG:
+								hshInsertC(pt->phsh, siHashLong, pc->pdata, sizeof(long));
+								break;
+							case CT_FLOAT:
+								hshInsertC(pt->phsh, siHashFloat, pc->pdata, sizeof(float));
+								break;
+							case CT_DOUBLE:
+								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
+								break;
+							}
+							break;
+						}
+					}
 				}
 			}
 			
@@ -244,7 +318,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
  * Parameter:     N/A.
  * Return value:  N/A.
  * Caution:       N/A.
- * Tip:           Call this function before program terminate to release memory.
+ * Tip:           Call this function before program terminated to release memory.
  */
 void siReleaseAllTransaction()
 {

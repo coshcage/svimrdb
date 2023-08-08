@@ -7,6 +7,7 @@
  */
 
 #include <ctype.h> /* Using function tolower. */
+#include <stdint.h>
 #include "svimrdb.h"
 
 /* Function name: siStrLCase
@@ -26,4 +27,34 @@ char * siStrLCase(char * str)
 		++s;
 	}
 	return str;
+}
+
+size_t siHashChar(const void * pkey)
+{
+	return (size_t) * (char *)pkey;
+}
+
+size_t siHashShort(const void * pkey)
+{
+	return (size_t) * (short *)pkey;
+}
+
+size_t siHashInt(const void * pkey)
+{
+	return (size_t) * (int *)pkey;
+}
+
+size_t siHashLong(const void * pkey)
+{
+	return (size_t) * (long *)pkey;
+}
+
+size_t siHashFloat(const void * pkey)
+{
+	return (size_t) * (uint32_t *)pkey;
+}
+
+size_t siHashDouble(const void * pkey)
+{
+	return (size_t) * (uint64_t *)pkey;
 }

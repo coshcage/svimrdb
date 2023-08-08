@@ -39,6 +39,17 @@ void _siReadString(char * buf, FILE * fp)
 	buf[i] = '\0';
 }
 
+void _siReadWString(wchar_t * buf, FILE * fp)
+{
+	size_t i = 0;
+	while ((i < BUFSIZ - 1) && (*buf = fgetwc(fp)))
+	{
+		++buf;
+		++i;
+	}
+	buf[i] = '\0';
+}
+
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _siWriteString
  * Description:   Write string to a file.
@@ -57,6 +68,17 @@ void _siWriteString(char * str, FILE * fp)
 	}
 	/* Put 0. */
 	fputc(*str, fp);
+}
+
+void _siWriteWString(wchar_t * str, FILE * fp)
+{
+	while (*str)
+	{
+		fputwc(*str, fp);
+		++str;
+	}
+	/* Put 0. */
+	fputwc(*str, fp);
 }
 
 /* Function name: siSaveTable
@@ -94,6 +116,8 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 		for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 		{
 			j = ((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct;
+			fwrite(&j, sizeof(size_t), 1, fp);
+			j = ((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->cr;
 			fwrite(&j, sizeof(size_t), 1, fp);
 		}
 
@@ -153,6 +177,9 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 			case CT_STRING:
 				_siWriteString((char *)(*ppc)->pdata, fp);
 				break;
+			case CT_WSTRING:
+				_siWriteWString((wchar_t *)(*ppc)->pdata, fp);
+				break;
 			}
 
 			++ppc;
@@ -188,6 +215,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			XCELL xc;
 			P_CELL * ppc;
 			char buf[BUFSIZ] = { 0 };
+			wchar_t wbuf[BUFSIZ] = { 0 };
 			
 			ptbl = (P_TABLE) malloc(sizeof(TABLE));
 			
@@ -205,7 +233,10 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 
 			/* Read table header. */
 			for (i = 0; i < j; ++i)
+			{
 				fread(&((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct, sizeof(size_t), 1, fp);
+				fread(&((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->cr, sizeof(size_t), 1, fp);
+			}
 
 			/* Read column names. */
 			for (i = 0; i < j; ++i)
@@ -269,11 +300,54 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 					_siReadString(buf, fp);
 					pc = siCreateCell(buf, xc.ct);
 					break;
+				case CT_WSTRING:
+					_siReadWString(wbuf, fp);
+					pc = siCreateCell(wbuf, xc.ct);
+					break;
 				}
 				*(ppc++) = pc;
 				fseek(fp, oldl, SEEK_SET);
 			}
-			
+			for (i = 0; i < ptbl->tbldata.ln; ++i)
+			{
+				P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					pt->phsh = hshCreateC(BKSNUM);
+					for (j = 0; j < ptbl->tbldata.col; ++j)
+					{
+						P_CELL pc;
+						strGetValueMatrix(&pc, &ptbl->tbldata, i, j, sizeof(P_CELL));
+						if (NULL != pc)
+						{
+							switch (pt->ct)
+							{
+							case CT_CHAR:
+								hshInsertC(pt->phsh, siHashChar, pc->pdata, sizeof(char));
+								break;
+							case CT_SHORT:
+								hshInsertC(pt->phsh, siHashShort, pc->pdata, sizeof(short));
+								break;
+							case CT_INTEGER:
+								hshInsertC(pt->phsh, siHashInt, pc->pdata, sizeof(int));
+								break;
+							case CT_LONG:
+								hshInsertC(pt->phsh, siHashLong, pc->pdata, sizeof(long));
+								break;
+							case CT_FLOAT:
+								hshInsertC(pt->phsh, siHashFloat, pc->pdata, sizeof(float));
+								break;
+							case CT_DOUBLE:
+								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
+								break;
+							}
+						}
+					}
+					break;
+				}
+			}
 		}
 		return ptbl;
 	}

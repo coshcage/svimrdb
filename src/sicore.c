@@ -9,6 +9,7 @@
 #include <stdlib.h> /* Using function malloc, free, realloc. */
 #include <string.h> /* Using function memcpy. */
 #include <math.h>   /* Using function roundf, round. */
+#include <wchar.h>  /* Using function wcscmp, wcslen. */
 #include "svimrdb.h"
 
 /* size_t integer copmaration function. */
@@ -64,6 +65,9 @@ static int _sicbfcmp(const void * px, const void * py)
 				break;
 			case CT_STRING:
 				r = strcmp((char *)pcx->pdata, (char *)pcy->pdata);
+				break;
+			case CT_WSTRING:
+				r = wcscmp((wchar_t *)pcx->pdata, (wchar_t *)pcy->pdata);
 				break;
 			}
 			if (0 == r)
@@ -519,8 +523,6 @@ P_MATRIX siCreateSelectView(P_ARRAY_Z * pparr, P_MATRIX pmtx, SICBF_SELECT cbfse
 				strResizeArrayZ(*pparr, j, sizeof(size_t));
 			if (NULL == strResizeMatrix(pmtxr, j, pmtx->col, sizeof(P_CELL)))
 				return NULL;
-			pmtxr->ln = j;
-			pmtxr->col = pmtx->col;
 		}
 	}
 	return pmtxr;
@@ -646,6 +648,10 @@ P_CELL siCreateCell(void * pitem, CellType ct)
 			m = strlen((char *)pitem) + 1;
 			l += m;
 			break;
+		case CT_WSTRING:
+			m = sizeof(wchar_t) * (wcslen((wchar_t *)pitem) + 1);
+			l += m;
+			break;
 		}
 		rtn = malloc(l);
 		if (NULL != rtn)
@@ -717,6 +723,10 @@ P_CELL siAlterCell(P_CELL pcl, void * newval)
 		case CT_STRING:
 			m = strlen((char *)newval) + 1;
 			l += m;
+			break;
+		case CT_WSTRING:
+			m = wcslen((wchar_t *)newval) + 1;
+			l += m * sizeof(wchar_t);
 			break;
 		}
 		rtn = realloc(pcl, l);
