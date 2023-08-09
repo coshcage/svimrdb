@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0711231418L00254
+ * File ID:     0702231427D0809230919L00340
  * License:     GPLv2.
  */
 
@@ -177,6 +177,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 							case CT_DOUBLE:
 								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
 								break;
+							case CT_STRING:
+								hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+								break;
+							case CT_WSTRING:
+								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+								break;
 							}
 							break;
 						}
@@ -260,6 +266,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 								break;
 							case CT_DOUBLE:
 								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
+								break;
+							case CT_STRING:
+								hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+								break;
+							case CT_WSTRING:
+								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 								break;
 							}
 							break;

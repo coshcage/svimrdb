@@ -2,7 +2,7 @@
  * Name:        sixmem.h
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0717231619L00282
+ * File ID:     0714231200H0809230920L00362
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -310,16 +310,16 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			}
 			for (i = 0; i < ptbl->tbldata.ln; ++i)
 			{
-				P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
-				switch (pt->cr)
+				for (j = 0; j < ptbl->tbldata.col; ++j)
 				{
-				case CR_UNIQUE:
-				case CR_PRIMARY_KEY:
-					pt->phsh = hshCreateC(BKSNUM);
-					for (j = 0; j < ptbl->tbldata.col; ++j)
+					P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), j);
+					P_CELL pc;
+					strGetValueMatrix(&pc, &ptbl->tbldata, i, j, sizeof(P_CELL));
+					switch (pt->cr)
 					{
-						P_CELL pc;
-						strGetValueMatrix(&pc, &ptbl->tbldata, i, j, sizeof(P_CELL));
+					case CR_UNIQUE:
+					case CR_PRIMARY_KEY:
+						pt->phsh = hshCreateC(BKSNUM);
 						if (NULL != pc)
 						{
 							switch (pt->ct)
@@ -342,10 +342,16 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 							case CT_DOUBLE:
 								hshInsertC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
 								break;
+							case CT_STRING:
+								hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+								break;
+							case CT_WSTRING:
+								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+								break;
 							}
 						}
+						break;
 					}
-					break;
 				}
 			}
 		}

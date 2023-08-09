@@ -2,12 +2,13 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0708231123L00165
+ * File ID:     0628231947A00809230919L00190
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
 #define _SVIMRDB_H_
 
+/* Include StoneValley headers. */
 #include "StoneValley/src/svstring.h"
 #include "StoneValley/src/svtree.h"
 #include "StoneValley/src/svset.h"
@@ -144,6 +145,9 @@ size_t siHashInt(const void * pkey);
 size_t siHashLong(const void * pkey);
 size_t siHashFloat(const void * pkey);
 size_t siHashDouble(const void * pkey);
+size_t siHashString(const void * pkey);
+size_t siHashWString(const void * pkey);
+size_t siPlatformSize(void);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);

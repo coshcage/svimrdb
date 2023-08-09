@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0708231121L00657
+ * File ID:     0628231947C070809230919L00976
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -257,7 +257,7 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl)
  *   parrhdr Pointer to an ARRAY_Z that contains table header description.
  *           Each element of this ARRAY_Z is TBLHDR.
  * Return value:  Pointer to a table.
- * Caution:       Parameter parrhdr must be allocated first..
+ * Caution:       Parameter parrhdr must be allocated first.
  * Tip:           N/A.
  */
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
@@ -309,6 +309,12 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 					case CT_DOUBLE:
 						hshCopyC(pt->phsh, siHashDouble, ptb->phsh, sizeof(double));
 						break;
+					case CT_STRING:
+						hshCopyC(pt->phsh, siHashString, ptb->phsh, sizeof(char *));
+						break;
+					case CT_WSTRING:
+						hshCopyC(pt->phsh, siHashWString, ptb->phsh, sizeof(wchar_t *));
+						break;
 					}
 				}
 				break;
@@ -335,7 +341,7 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table.
  * Return value:  Pointer to a new table.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
@@ -369,7 +375,7 @@ P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to delete.
  * Return value:  N/A.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
@@ -413,7 +419,7 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
  *      ptbl Pointer to a table you want to insert.
  *       ... Parameters you want to insert.
  * Return value:  TRUE insertion succeeded. FALSE insertion failed.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
@@ -545,9 +551,35 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 				break;
 			case CT_STRING:
 				pc = siCreateCell(va_arg(arg, char *), pt->ct);
+				if (NULL != pt->phsh)
+				{
+					switch (pt->cr)
+					{
+					case CR_UNIQUE:
+					case CR_PRIMARY_KEY:
+						if (NULL == hshSearchC(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
+							hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+						else
+							bins = FALSE;
+						break;
+					}
+				}
 				break;
 			case CT_WSTRING:
 				pc = siCreateCell(va_arg(arg, wchar_t *), pt->ct);
+				if (NULL != pt->phsh)
+				{
+					switch (pt->cr)
+					{
+					case CR_UNIQUE:
+					case CR_PRIMARY_KEY:
+						if (NULL == hshSearchC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
+							hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+						else
+							bins = FALSE;
+						break;
+					}
+				}
 				break;
 			}
 			if (bins)
@@ -583,7 +615,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
  *      ptbl Pointer to a table you want to delete from.
  *        ln Row number you want to delete. Starts from 0.
  * Return value:  TRUE deletion succeeded. FALSE deletion failed.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
@@ -643,6 +675,12 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 					case CT_DOUBLE:
 						hshRemoveC(pt->phsh, siHashDouble, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(double));
 						break;
+					case CT_STRING:
+						hshRemoveC(pt->phsh, siHashString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(char *));
+						break;
+					case CT_WSTRING:
+						hshRemoveC(pt->phsh, siHashWString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(wchar_t *));
+						break;
 					}
 					break;
 				}
@@ -673,7 +711,7 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
  *        ln Cell row number. Starts from 0.
  *       col Cel column number. Starts from 0.
  * Return value:  N/A.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col)
@@ -752,6 +790,24 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 						hshInsertC(pt->phsh, siHashDouble, pval, sizeof(double));
 					}
 					break;
+				case CT_STRING:
+					if (NULL != hshSearchC(pt->phsh, siHashString, &pval, sizeof(char *)))
+						balt = FALSE;
+					else
+					{
+						hshRemoveC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+						hshInsertC(pt->phsh, siHashString, &pval, sizeof(char *));
+					}
+					break;
+				case CT_WSTRING:
+					if (NULL != hshSearchC(pt->phsh, siHashWString, &pval, sizeof(wchar_t *)))
+						balt = FALSE;
+					else
+					{
+						hshRemoveC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+						hshInsertC(pt->phsh, siHashWString, &pval, sizeof(wchar_t *));
+					}
+					break;
 				}
 				break;
 			}
@@ -793,7 +849,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
  *      ptbl Pointer to a table you want to operate.
  *      phdr Pointer to a TBLHDR structure that contains new column description.
  * Return value:  TRUE adding succeeded. FALSE adding failed.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
@@ -861,12 +917,12 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
  *      ptbl Pointer to a table you want to operate.
  *       col Column number of the table. Starts from 0.
  * Return value:  TRUE dropping succeeded. FALSE dropping failed.
- * Caution:       Parameter ptbl must be allocated first..
+ * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
 BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 {
-	size_t i, j;
+	size_t i;
 
 	if (col >= ptbl->tbldata.col)
 		return FALSE;
