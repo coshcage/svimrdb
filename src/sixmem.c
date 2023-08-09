@@ -2,7 +2,7 @@
  * Name:        sixmem.h
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0809230920L00362
+ * File ID:     0714231200H0809230950L00370
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -10,6 +10,7 @@
 #include <stdlib.h> /* Using function malloc. */
 
 /* DB Table file structure.
+ * platform size for a size_t.
  * db for magical number.
  * 1 table header count.
  * CT_INTEGER table header.
@@ -105,6 +106,10 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 		/* Write magic number. */
 		fputc('d', fp);
 		fputc('b', fp);
+
+		/* Write platform size. */
+		j = siPlatformSize();
+		fwrite(&j, sizeof(size_t), 1, fp);
 
 		/* Write table name. */
 		_siWriteString(ptbl->tblname, fp);
@@ -209,7 +214,10 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 
 		/* Read magic number. */
 		fread(magic, sizeof(char), 2, fp);
-		if ('d' == magic[0] && 'b' == magic[1])
+		/* Read platform size. */
+		fread(&j, sizeof(size_t), 1, fp);
+
+		if ('d' == magic[0] && 'b' == magic[1] && siPlatformSize() == j)
 		{
 			long oldl;
 			XCELL xc;
