@@ -113,11 +113,17 @@ P_TABLE CreateTableSC(P_TRANS ptrans)
 
 void InsertIntoTableSC(P_TRANS ptrans, P_TABLE ptbl)
 {
-	siInsertIntoTable(ptrans, ptbl, 2023001, 1, 92.0);
-	siInsertIntoTable(ptrans, ptbl, 2023001, 2, 85.0);
-	siInsertIntoTable(ptrans, ptbl, 2023001, 3, 88.0);
-	siInsertIntoTable(ptrans, ptbl, 2023002, 2, 90.0);
-	siInsertIntoTable(ptrans, ptbl, 2023002, 3, 80.0);
+	float f;
+	f = 92.0f;
+	siInsertIntoTable(ptrans, ptbl, 2023001, 1, &f);
+	f = 85.0f;
+	siInsertIntoTable(ptrans, ptbl, 2023001, 2, &f);
+	f = 88.0f;
+	siInsertIntoTable(ptrans, ptbl, 2023001, 3, &f);
+	f = 90.0f;
+	siInsertIntoTable(ptrans, ptbl, 2023002, 2, &f);
+	f = 80.0f;
+	siInsertIntoTable(ptrans, ptbl, 2023002, 3, &f);
 }
 
 int main()
