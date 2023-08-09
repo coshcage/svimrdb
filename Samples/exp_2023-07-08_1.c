@@ -91,34 +91,9 @@ int main()
 
 	siPrintView(pv);
 
-	/*
-	fp = fopen("C:\\Users\\user1\\source\\repos\\ConsoleApplication2\\ConsoleApplication2\\test.db", "wb");
+	strDeleteMatrix(pv);
 
-	if (NULL != fp)
-	{
-		siSaveTable(fp, 0, ptbl);
-		fclose(fp);
-	}
-	*/
 	siDeleteTable(ptrans, ptbl);
-
-	/*fp = fopen("C:\\Users\\user1\\source\\repos\\ConsoleApplication2\\ConsoleApplication2\\test.db", "rb");
-
-	if (NULL != fp)
-	{
-		ptbl = siLoadTable(fp, 0);
-
-		pv = siCreateViewOfTable(ptbl);
-
-		siSortView(pv, 1, TRUE);
-
-		siPrintView(pv);
-
-		strDeleteMatrix(pv);
-
-		fclose(fp);
-	}
-	*/
 
 	siRollbackTransaction(&pa, ptrans);
 
