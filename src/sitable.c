@@ -517,7 +517,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 				}
 				break;
 			case CT_FLOAT:
-				cd.f = va_arg(arg, float);
+				cd.f = *(float *)va_arg(arg, float *);
 				pc = siCreateCell(&cd.f, pt->ct);
 				if (NULL != pt->phsh)
 				{
@@ -534,7 +534,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 				}
 				break;
 			case CT_DOUBLE:
-				cd.d = va_arg(arg, double);
+				cd.d = *(double *)va_arg(arg, double *);
 				pc = siCreateCell(&cd.d, pt->ct);
 				if (NULL != pt->phsh)
 				{
