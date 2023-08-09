@@ -2,7 +2,7 @@
  * Name:        sixmem.h
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0809230950L00370
+ * File ID:     0714231200H0809231000L00388
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -40,6 +40,15 @@ void _siReadString(char * buf, FILE * fp)
 	buf[i] = '\0';
 }
 
+/* Attention:     This Is An Internal Function. No Interface for Library Users.
+ * Function name: _siReadWString
+ * Description:   Read wide string from file.
+ * Parameters:
+ *        buf Pointer to a wide string buffer.
+ *         fp Pointer to a file.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ */
 void _siReadWString(wchar_t * buf, FILE * fp)
 {
 	size_t i = 0;
@@ -71,6 +80,15 @@ void _siWriteString(char * str, FILE * fp)
 	fputc(*str, fp);
 }
 
+/* Attention:     This Is An Internal Function. No Interface for Library Users.
+ * Function name: _siWriteWString
+ * Description:   Write wide string to a file.
+ * Parameters:
+ *        str Pointer to a wide string.
+ *         fp Pointer to a file.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ */
 void _siWriteWString(wchar_t * str, FILE * fp)
 {
 	while (*str)
