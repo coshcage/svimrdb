@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C070809230919L00976
+ * File ID:     0628231947C070809231310L00977
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -282,9 +282,7 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 
 			switch (pt->cr)
 			{
-			case CR_NONE:
-				pt->phsh = NULL;
-				break;
+			case CR_UNIQUE:
 			case CR_PRIMARY_KEY:
 				pt->phsh = hshCreateC(BKSNUM);
 				if (NULL != ptb->phsh)
@@ -317,6 +315,9 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 						break;
 					}
 				}
+				break;
+			default:
+				pt->phsh = NULL;
 				break;
 			}
 		}
@@ -432,7 +433,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 		va_list arg;
 		va_start(arg, ptbl);
 		
-		for (i = 0; i < ptbl->header.num; ++i)
+		for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 		{
 			union un_CellData
 			{
@@ -444,7 +445,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 				double d;
 			} cd;
 			P_CELL pc;
-			P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
+			P_TBLHDR pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 			switch (pt->ct)
 			{
 			case CT_CHAR:
