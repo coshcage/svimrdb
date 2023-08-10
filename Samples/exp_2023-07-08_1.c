@@ -53,7 +53,7 @@ int main()
 	siInsertIntoTable(ptrans, ptbl, 4, "Amy", L"CS");
 	siInsertIntoTable(ptrans, ptbl, 3, "Jack", L"LT");
 
-	/*fp = fopen("C:\\Users\\user1\\source\\repos\\ConsoleApplication2\\ConsoleApplication2\\test.db", "wb");
+	/*fp = fopen("test.db", "wb");
 
 	if (NULL != fp)
 	{
@@ -61,7 +61,7 @@ int main()
 		fclose(fp);
 	}
 
-	fp = fopen("C:\\Users\\user1\\source\\repos\\ConsoleApplication2\\ConsoleApplication2\\test.db", "rb");
+	fp = fopen("test.db", "rb");
 
 	if (NULL != fp)
 	{
