@@ -11,6 +11,7 @@
 P_TABLE CreateTableStudent(P_TRANS ptrans)
 {
 	P_ARRAY_Z parrhdr;
+	P_TABLE r = NULL;
 
 	parrhdr = strCreateArrayZ(5, sizeof(TBLHDR));
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 0))->ct = CT_INTEGER;
@@ -38,7 +39,11 @@ P_TABLE CreateTableStudent(P_TRANS ptrans)
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 4))->cr = CR_NONE;
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 4))->strname = "sdept";
 
-	return siCreateTable(ptrans, "student", parrhdr);
+	r = siCreateTable(ptrans, "student", parrhdr);
+
+	strDeleteArrayZ(parrhdr);
+
+	return r;
 }
 
 void InsertIntoTableStudent(P_TRANS ptrans, P_TABLE ptbl)
@@ -52,6 +57,7 @@ void InsertIntoTableStudent(P_TRANS ptrans, P_TABLE ptbl)
 P_TABLE CreateTableCourse(P_TRANS ptrans)
 {
 	P_ARRAY_Z parrhdr;
+	P_TABLE r = NULL;
 
 	parrhdr = strCreateArrayZ(4, sizeof(TBLHDR));
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 0))->ct = CT_INTEGER;
@@ -74,7 +80,11 @@ P_TABLE CreateTableCourse(P_TRANS ptrans)
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 3))->cr = CR_NONE;
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 3))->strname = "ccredit";
 
-	return siCreateTable(ptrans, "course", parrhdr);
+	r = siCreateTable(ptrans, "course", parrhdr);
+
+	strDeleteArrayZ(parrhdr);
+
+	return r;
 }
 
 void InsertIntoTableCourse(P_TRANS ptrans, P_TABLE ptbl)
@@ -91,6 +101,7 @@ void InsertIntoTableCourse(P_TRANS ptrans, P_TABLE ptbl)
 P_TABLE CreateTableSC(P_TRANS ptrans)
 {
 	P_ARRAY_Z parrhdr;
+	P_TABLE r = NULL;
 
 	parrhdr = strCreateArrayZ(3, sizeof(TBLHDR));
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 0))->ct = CT_INTEGER;
@@ -108,7 +119,11 @@ P_TABLE CreateTableSC(P_TRANS ptrans)
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 2))->cr = CR_NONE;
 	((TBLHDR *)strLocateItemArrayZ(parrhdr, sizeof(TBLHDR), 2))->strname = "grade";
 
-	return siCreateTable(ptrans, "sc", parrhdr);
+	r = siCreateTable(ptrans, "sc", parrhdr);
+
+	strDeleteArrayZ(parrhdr);
+
+	return r;
 }
 
 void InsertIntoTableSC(P_TRANS ptrans, P_TABLE ptbl)
