@@ -97,6 +97,8 @@ int main()
 
 	siRollbackTransaction(&pa, ptrans);
 
+	strDeleteArrayZ(parrhdr);
+
 	if (NULL != pa)
 		strDeleteArrayZ(pa);
 
