@@ -406,7 +406,7 @@ P_MATRIX siCreateDifferenceView(P_MATRIX pmtxa, P_MATRIX pmtxb)
 P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb)
 {
 	size_t m, n;
-	P_MATRIX pmr = strCreateMatrix(m = pma->ln * pmb->ln, n = pma->col + pma->col, sizeof(P_CELL));
+	P_MATRIX pmr = strCreateMatrix(m = pma->ln * pmb->ln, n = pma->col + pmb->col, sizeof(P_CELL));
 	if (NULL != pmr)
 	{
 		REGISTER size_t i, x, y;
