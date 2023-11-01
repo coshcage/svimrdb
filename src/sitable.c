@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C1101231110L00976
+ * File ID:     0628231947C1101231110L00978
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -83,6 +83,8 @@ static int _sicbfcmpSV(const void * px, const void * py)
  */
 void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
 {
+	if (col >= pmtx->col)
+		return;
 	sizSVTarget = col;
 	bAscend = ascd;
 	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _sicbfcmpSV);
