@@ -2,14 +2,13 @@
  * Name:        svimrdb.h
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0809230919L00742
+ * File ID:     0628231947B1101231110L00741
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, realloc. */
 #include <string.h> /* Using function memcpy. */
 #include <math.h>   /* Using function roundf, round. */
-#include <wchar.h>  /* Using function wcscmp, wcslen. */
 #include "svimrdb.h"
 
 /* size_t integer copmaration function. */

@@ -14,6 +14,7 @@
 #include "StoneValley/src/svset.h"
 #include "StoneValley/src/svqueue.h"
 #include "StoneValley/src/svhash.h"
+#include <wchar.h>  /* Using function wcslen, wcscmp, wprintf, wcscmp. */
 
 /* Cell type. */
 typedef enum en_CellType
@@ -147,6 +148,8 @@ size_t siHashFloat(const void * pkey);
 size_t siHashDouble(const void * pkey);
 size_t siHashString(const void * pkey);
 size_t siHashWString(const void * pkey);
+P_NODE_S hshSearchCPlusA(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
+P_NODE_S hshSearchCPlusW(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
 size_t siPlatformSize(void);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
@@ -162,7 +165,7 @@ void siDeleteCell(P_CELL * ppcell);
 /* Table and view functions. */
 void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd);
 P_MATRIX siInstantiateView(P_MATRIX pmtx);
-void siDestoryView(P_MATRIX pmtx);
+void siDestroyView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);
 ptrdiff_t siGetColumnByString(P_TABLE ptbl, char * strname);
 P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
@@ -184,6 +187,6 @@ BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
 #define BKSNUM 1021 /* 1021 is a prime. */
-#define strdup _strdup /* POSIX complient for visual C compiler. */
+#define strdup _strdup /* POSIX compliant for visual C compiler. */
 
 #endif

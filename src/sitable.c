@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C070809231310L00977
+ * File ID:     0628231947C1101231110L00976
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -10,7 +10,6 @@
 #include <stdlib.h> /* Using function malloc, free, qsort. */
 #include <string.h> /* Using function strdup, memmove. */
 #include <math.h>   /* Using function round, roundf. */
-#include <wchar.h>  /* Using function wcslen, wcscmp, wprintf. */
 #include <stdarg.h>
 #include "svimrdb.h"
 
@@ -124,7 +123,7 @@ P_MATRIX siInstantiateView(P_MATRIX pmtx)
 	return NULL;
 }
 
-/* Function name: siDestoryView
+/* Function name: siDestroyView
  * Description:   Uninitialize a view and its cell.
  * Parameter:
  *      pmtx Pointer to a view.
@@ -132,7 +131,7 @@ P_MATRIX siInstantiateView(P_MATRIX pmtx)
  * Caution:       N/A.
  * Tip:           N/A.
  */
-void siDestoryView(P_MATRIX pmtx)
+void siDestroyView(P_MATRIX pmtx)
 {
 	if (NULL != pmtx)
 	{
@@ -406,7 +405,7 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 
 	if (NULL != ptbl->tbldata.arrz.pdata)
 	{
-		siDestoryView(&ptbl->tbldata);
+		siDestroyView(&ptbl->tbldata);
 		strFreeMatrix(&ptbl->tbldata);
 	}
 	free(ptbl);
@@ -558,7 +557,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 					{
 					case CR_UNIQUE:
 					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
+						if (NULL == hshSearchCPlusA(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
 							hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
 						else
 							bins = FALSE;
@@ -574,7 +573,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 					{
 					case CR_UNIQUE:
 					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
+						if (NULL == hshSearchCPlusW(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
 							hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 						else
 							bins = FALSE;
