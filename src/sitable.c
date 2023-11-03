@@ -251,7 +251,7 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl)
 }
 
 /* Function name: siCreateTable
- * Description:   Print a view to stdout.
+ * Description:   Create a new table.
  * Parameter:
  *    ptrans Pointer to a transaction.
  *   tblname Pointer to a string that indicates table name.
