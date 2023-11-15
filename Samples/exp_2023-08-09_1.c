@@ -212,7 +212,7 @@ int main()
 	siPrintView(pv2);
 	strDeleteMatrix(pv);
 	strDeleteMatrix(pv2);
-
+	strDeleteArrayZ(parr);
 	
 	siDeleteTable(ptrans, ptbl_student);
 	siDeleteTable(ptrans, ptbl_course);
