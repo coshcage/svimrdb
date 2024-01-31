@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C1101231110L00978
+ * File ID:     0628231947C0130242056L00996
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -15,6 +15,9 @@
 
 static size_t sizSVTarget = 0; /* Variable for sorting column of a table. */
 static BOOL   bAscend = TRUE;  /* Ascend or descend for TRUE or FALSE respectively. */
+
+pthread_mutex_t mtxSST = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mtxBAD = PTHREAD_MUTEX_INITIALIZER;
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _sicbfcmpSV
@@ -29,8 +32,14 @@ static int _sicbfcmpSV(const void * px, const void * py)
 {
 	int r = 0;
 	P_CELL pcx, pcy;
+
+	pthread_mutex_lock(&mtxSST);
+
 	pcx = *((P_CELL *)px + sizSVTarget);
 	pcy = *((P_CELL *)py + sizSVTarget);
+
+	pthread_mutex_unlock(&mtxSST);
+
 	if (NULL != pcx && NULL != pcy)
 	{
 		switch (pcx->ct)
@@ -85,8 +94,17 @@ void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
 {
 	if (col >= pmtx->col)
 		return;
+
+	pthread_mutex_lock(&mtxSST);
+	pthread_mutex_lock(&mtxBAD);
+
 	sizSVTarget = col;
 	bAscend = ascd;
+
+	pthread_mutex_unlock(&mtxBAD);
+	pthread_mutex_unlock(&mtxSST);
+	
+
 	qsort(pmtx->arrz.pdata, pmtx->ln, sizeof(P_CELL) * pmtx->col, _sicbfcmpSV);
 }
 
@@ -450,7 +468,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 			switch (pt->ct)
 			{
 			case CT_CHAR:
-				cd.c = va_arg(arg, char);
+				cd.c = (char)va_arg(arg, char);
 				pc = siCreateCell(&cd.c, pt->ct);
 				if (NULL != pt->phsh)
 				{

@@ -2,19 +2,20 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A00809230919L00190
+ * File ID:     0628231947A0130242055L00197
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
 #define _SVIMRDB_H_
 
 /* Include StoneValley headers. */
-#include "StoneValley/src/svstring.h"
-#include "StoneValley/src/svtree.h"
-#include "StoneValley/src/svset.h"
-#include "StoneValley/src/svqueue.h"
-#include "StoneValley/src/svhash.h"
+#include "svstring.h"
+#include "svtree.h"
+#include "svset.h"
+#include "svqueue.h"
+#include "svhash.h"
 #include <wchar.h>  /* Using function wcslen, wcscmp, wprintf, wcscmp. */
+#include <pthread.h>
 
 /* Cell type. */
 typedef enum en_CellType
@@ -187,6 +188,9 @@ BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
 #define BKSNUM 1021 /* 1021 is a prime. */
-#define strdup _strdup /* POSIX compliant for visual C compiler. */
+// #define strdup _strdup /* POSIX compliant for visual C compiler. */
+
+//#define pthread_mutex_lock(abc)
+//#define pthread_mutex_unlock(def)
 
 #endif

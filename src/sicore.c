@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B1101231110L00741
+ * File ID:     0628231947B0130242056L00773
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
@@ -11,7 +11,7 @@
 #include <math.h>   /* Using function roundf, round. */
 #include "svimrdb.h"
 
-/* size_t integer copmaration function. */
+/* size_t integer comparation function. */
 extern int _grpCBFCompareInteger(const void * px, const void * py);
 static int _sicbfcmp(const void * px, const void * py);
 static int _sicbftvsMergeView(void * pitem, size_t param);
@@ -20,6 +20,7 @@ static int _sicbftvsMergeView(void * pitem, size_t param);
  * This variable is used to store the view column number.
  */
 static size_t _sizCUTTarget;
+pthread_mutex_t mtxSCT = PTHREAD_MUTEX_INITIALIZER;
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _sicbfcmp
@@ -35,6 +36,7 @@ static int _sicbfcmp(const void * px, const void * py)
 	size_t i;
 	P_CELL pcx, pcy;
 
+	pthread_mutex_lock(&mtxSCT);
 
 	for (i = 0; i < _sizCUTTarget; ++i)
 	{
@@ -72,13 +74,25 @@ static int _sicbfcmp(const void * px, const void * py)
 			if (0 == r)
 				continue;
 			else
+			{
+				pthread_mutex_unlock(&mtxSCT);
 				return r;
+			}
 		}
 		else if (NULL == pcx && NULL != pcy)
+		{
+			pthread_mutex_unlock(&mtxSCT);
 			return -1;
+		}
 		else if (NULL != pcx && NULL == pcy)
+		{
+			pthread_mutex_unlock(&mtxSCT);
 			return 1;
+		}
 	}
+
+	pthread_mutex_unlock(&mtxSCT);
+
 	return r;
 }
 
@@ -92,12 +106,14 @@ static int _sicbfcmp(const void * px, const void * py)
  */
 static int _sicbftvsMergeView(void * pitem, size_t param)
 {
+	pthread_mutex_lock(&mtxSCT);
 	memcpy
 	(
 		((P_MATRIX)(0[(size_t *)param]))->arrz.pdata + 1[(size_t *)param]++ * _sizCUTTarget * sizeof(P_CELL),
 		*(P_CELL *)(P2P_BSTNODE(pitem)->knot.pdata),
 		_sizCUTTarget * sizeof(P_CELL)
 	);
+	pthread_mutex_unlock(&mtxSCT);
 	return CBF_CONTINUE;
 }
 
@@ -122,7 +138,11 @@ P_MATRIX siCreateUniqueView(P_MATRIX pmtx)
 
 		setInitT(&set);
 
+		pthread_mutex_lock(&mtxSCT);
+
 		_sizCUTTarget = pmtx->col;
+
+		pthread_mutex_unlock(&mtxSCT);
 
 		for (j = i = 0; i < pmtx->ln; ++i)
 		{
@@ -217,7 +237,11 @@ P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb)
 
 			setInitT(&set);
 
+			pthread_mutex_lock(&mtxSCT);
+
 			_sizCUTTarget = pma->col;
+
+			pthread_mutex_unlock(&mtxSCT);
 
 			for (j = i = 0; i < pma->ln; ++i)
 			{
@@ -284,7 +308,11 @@ P_MATRIX siCreateIntersectionView(P_MATRIX pmtxa, P_MATRIX pmtxb)
 			setInitT(&seta);
 			setInitT(&setb);
 
+			pthread_mutex_lock(&mtxSCT);
+
 			_sizCUTTarget = pma->col;
+
+			pthread_mutex_unlock(&mtxSCT);
 
 			for (i = 0; i < pma->ln; ++i)
 			{
@@ -360,7 +388,11 @@ P_MATRIX siCreateDifferenceView(P_MATRIX pmtxa, P_MATRIX pmtxb)
 			setInitT(&seta);
 			setInitT(&setb);
 
+			pthread_mutex_lock(&mtxSCT);
+
 			_sizCUTTarget = pma->col;
+
+			pthread_mutex_unlock(&mtxSCT);
 
 			for (i = 0; i < pma->ln; ++i)
 			{

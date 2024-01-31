@@ -2,7 +2,7 @@
  * Name:        silock.c
  * Description: Lock functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0704231516F0708231202L00145
+ * File ID:     0704231516F0130242056L00153
  * License:     GPLv2.
  */
 
@@ -22,6 +22,7 @@ static BOOL const bCompatibleMatrix[][6] =
 };
 
 extern P_SET_T psetTrans; /* Transactions. */
+extern pthread_mutex_t mtxPST;
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _sicbfcmpLock
@@ -114,12 +115,19 @@ BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
 	a[2] = (size_t)ptrans;
 	a[3] = FALSE;
 
+	pthread_mutex_lock(&mtxPST);
+
 	if (NULL != psetTrans)
 	{
 		setTraverseT(psetTrans, _sicbftvsTrans, (size_t)a, ETM_LEVELORDER);
 		if (FALSE != a[3])
+		{
+			pthread_mutex_unlock(&mtxPST);
 			return FALSE;
+		}
 	}
+
+	pthread_mutex_unlock(&mtxPST);
 
 	setInsertT(&ptrans->setlock, &l, sizeof(LOCK), _sicbfcmpLock);
 	return TRUE;

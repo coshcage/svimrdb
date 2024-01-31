@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0809230919L00340
+ * File ID:     0702231427D0130242055L00360
  * License:     GPLv2.
  */
 
@@ -13,6 +13,7 @@
 
 /* A set of transactions. */
 P_SET_T psetTrans = NULL;
+pthread_mutex_t mtxPST = PTHREAD_MUTEX_INITIALIZER;
 
 /* Compare function declaration. */
 extern int _grpCBFCompareInteger(const void * px, const void * py);
@@ -31,9 +32,15 @@ P_TRANS siBeginTransaction()
 		return NULL;
 	queInitDL(&pt->qoprlst);
 	setInitT(&pt->setlock);
+
+	pthread_mutex_lock(&mtxPST);
+
 	if (NULL == psetTrans)
 		psetTrans = setCreateT();
 	setInsertT(psetTrans, &pt, sizeof(P_TRANS), _grpCBFCompareInteger);
+
+	pthread_mutex_unlock(&mtxPST);
+
 	return pt;
 }
 
@@ -85,7 +92,11 @@ void siCommitTransaction(P_TRANS ptrans)
 			break;
 		}
 	}
+	pthread_mutex_lock(&mtxPST);
+
 	setRemoveT(psetTrans, &ptrans, sizeof(P_TRANS), _grpCBFCompareInteger);
+
+	pthread_mutex_unlock(&mtxPST);
 	setFreeT(&ptrans->setlock);
 	free(ptrans);
 }
@@ -320,7 +331,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 	if (NULL != pparr && 0 != m)
 		strResizeArrayZ(*pparr, m, sizeof(TBLREF));
 
+	pthread_mutex_lock(&mtxPST);
+
 	setRemoveT(psetTrans, &ptrans, sizeof(P_TRANS), _grpCBFCompareInteger);
+
+	pthread_mutex_unlock(&mtxPST);
+
 	setFreeT(&ptrans->setlock);
 	free(ptrans);
 }
@@ -334,6 +350,10 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
  */
 void siReleaseAllTransaction()
 {
+	pthread_mutex_lock(&mtxPST);
+
 	setDeleteT(psetTrans);
 	psetTrans = NULL;
+
+	pthread_mutex_unlock(&mtxPST);
 }
