@@ -1,7 +1,7 @@
 //
 //  exp_2023-08-09_1.c
 //  This file demonstrates usage of svimrdb.
-//  Created by cosh.cage#hotmail.com on 08/09/23.
+//  Created by cosh.cage#hotmail.com on 01/30/24.
 //  Licence:  GPLv2.
 //  Platform: Unix|GNU/Linux
 //
@@ -282,8 +282,6 @@ void * bar(void * ptr)
 	siCommitTransaction(ptrans);
 }
 
-// #include <unistd.h>
-
 int main()
 {
 	pthread_t pt1, pt2;
@@ -301,37 +299,5 @@ int main()
 
 	siReleaseAllTransaction();
 
-
 	return 0;
 }
-
-//#define NTHREADS 1
-//
-//int main_x()
-//{
-//	pthread_t thread_id[NTHREADS];
-//	int i, j;
-//
-//	for (i = 0; i < NTHREADS; i++)
-//	{
-//		pthread_create(&thread_id[i], NULL, bar, NULL);
-//		pthread_create(&thread_id[i + 1], NULL, qux, NULL);
-//	}
-//
-//	for (j = 0; j < NTHREADS; j++)
-//	{
-//		pthread_join(thread_id[j], NULL);
-//		pthread_join(thread_id[j + 1], NULL);
-//	}
-//
-//	if (ptr)
-//		free(ptr);
-//
-//	//siReleaseAllTransaction();
-//
-//	//siDeleteTable(NULL, ptbl_student);
-//	//siDeleteTable(NULL, ptbl_course);
-//	//siDeleteTable(NULL, ptbl_sc);
-//
-//	return 0;
-//}
