@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0130242056L00773
+ * File ID:     0628231947B0217241548L00768
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
@@ -293,55 +293,50 @@ P_MATRIX siCreateIntersectionView(P_MATRIX pmtxa, P_MATRIX pmtxb)
 		return NULL;
 	else
 	{
-		if (pmtxa->col != pmtxb->col)
-			return NULL;
-		else
+		P_MATRIX mtxr = NULL;
+		size_t i;
+		P_MATRIX pma = siCreateUniqueView(pmtxa);
+		P_MATRIX pmb = siCreateUniqueView(pmtxb);
+		SET_T seta, setb, * psetc;
+		P_CELL * ptuple;
+		size_t a[2];
+
+		setInitT(&seta);
+		setInitT(&setb);
+
+		pthread_mutex_lock(&mtxSCT);
+
+		_sizCUTTarget = pma->col;
+
+		pthread_mutex_unlock(&mtxSCT);
+
+		for (i = 0; i < pma->ln; ++i)
 		{
-			P_MATRIX mtxr = NULL;
-			size_t i;
-			P_MATRIX pma = siCreateUniqueView(pmtxa);
-			P_MATRIX pmb = siCreateUniqueView(pmtxb);
-			SET_T seta, setb, * psetc;
-			P_CELL * ptuple;
-			size_t a[2];
-
-			setInitT(&seta);
-			setInitT(&setb);
-
-			pthread_mutex_lock(&mtxSCT);
-
-			_sizCUTTarget = pma->col;
-
-			pthread_mutex_unlock(&mtxSCT);
-
-			for (i = 0; i < pma->ln; ++i)
-			{
-				ptuple = strGetValueMatrix(NULL, pma, i, 0, sizeof(P_CELL));
-				seta = treBSTInsertAA(seta, &ptuple, sizeof(P_CELL *), _sicbfcmp);
-			}
-
-			for (i = 0; i < pma->ln; ++i)
-			{
-				ptuple = strGetValueMatrix(NULL, pmb, i, 0, sizeof(P_CELL));
-				setb = treBSTInsertAA(setb, &ptuple, sizeof(P_CELL *), _sicbfcmp);
-			}
-
-			psetc = setCreateIntersectionT(&seta, &setb, sizeof(P_CELL), _sicbfcmp);
-			if (NULL != psetc)
-			{
-				mtxr = strCreateMatrix(setSizeT(psetc), pma->col, sizeof(P_CELL));
-				a[0] = (size_t)mtxr;
-				a[1] = 0;
-				if (NULL != mtxr)
-					setTraverseT(psetc, _sicbftvsMergeView, (size_t)a, ETM_INORDER);
-			}
-
-			setFreeT(&seta);
-			setFreeT(&setb);
-			setDeleteT(psetc);
-
-			return mtxr;
+			ptuple = strGetValueMatrix(NULL, pma, i, 0, sizeof(P_CELL));
+			seta = treBSTInsertAA(seta, &ptuple, sizeof(P_CELL *), _sicbfcmp);
 		}
+
+		for (i = 0; i < pma->ln; ++i)
+		{
+			ptuple = strGetValueMatrix(NULL, pmb, i, 0, sizeof(P_CELL));
+			setb = treBSTInsertAA(setb, &ptuple, sizeof(P_CELL *), _sicbfcmp);
+		}
+
+		psetc = setCreateIntersectionT(&seta, &setb, sizeof(P_CELL), _sicbfcmp);
+		if (NULL != psetc)
+		{
+			mtxr = strCreateMatrix(setSizeT(psetc), pma->col, sizeof(P_CELL));
+			a[0] = (size_t)mtxr;
+			a[1] = 0;
+			if (NULL != mtxr)
+				setTraverseT(psetc, _sicbftvsMergeView, (size_t)a, ETM_INORDER);
+		}
+
+		setFreeT(&seta);
+		setFreeT(&setb);
+		setDeleteT(psetc);
+
+		return mtxr;
 	}
 	return NULL;
 }
