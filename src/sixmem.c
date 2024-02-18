@@ -1,5 +1,5 @@
 /*
- * Name:        sixmem.h
+ * Name:        sixmem.c
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
  * File ID:     0714231200H0809231000L00388
