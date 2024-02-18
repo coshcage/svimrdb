@@ -1,5 +1,5 @@
 /*
- * Name:        svimrdb.h
+ * Name:        sicore.c
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
  * File ID:     0628231947B0217241548L00768
