@@ -468,7 +468,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 			switch (pt->ct)
 			{
 			case CT_CHAR:
-				cd.c = (char)va_arg(arg, char);
+				cd.c = (char)va_arg(arg, int);
 				pc = siCreateCell(&cd.c, pt->ct);
 				if (NULL != pt->phsh)
 				{
@@ -485,7 +485,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
 				}
 				break;
 			case CT_SHORT:
-				cd.s = va_arg(arg, short);
+				cd.s = va_arg(arg, int);
 				pc = siCreateCell(&cd.s, pt->ct);
 				if (NULL != pt->phsh)
 				{
