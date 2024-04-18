@@ -5,8 +5,20 @@
 //  Licence:  GPLv2.
 //  Platform: Unix|GNU/Linux
 //
+#define _CRT_SECURE_NO_WARNINGS 1
 #include "svimrdb.h"
-// #include "sixmem.h"
+#include "sixmem.h"
+
+void PrintMatrix(P_MATRIX pmtx)
+{
+	size_t i, j;
+	for (i = 0; i < pmtx->ln; ++i)
+	{
+		for (j = 0; j < pmtx->col; ++j)
+			printf("%p ", *(P_CELL *)strGetValueMatrix(NULL, pmtx, i, j, sizeof(P_CELL)));
+		printf("\n");
+	}
+}
 
 int main()
 {
@@ -14,7 +26,7 @@ int main()
 	P_TRANS ptrans;
 	P_TABLE ptbl;
 	P_ARRAY_Z parrhdr, pa = NULL;
-	// FILE * fp;
+	FILE * fp;
 
 	TBLHDR tbh;
 
@@ -47,13 +59,15 @@ int main()
 	while (TRUE != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
 		;
 
-	siInsertIntoTable(ptrans, ptbl, 2, "Lisa", L"CS");
-	siInsertIntoTable(ptrans, ptbl, 2, "Lisa", L"CS");
-	siInsertIntoTable(ptrans, ptbl, 1, "John", L"LT");
-	siInsertIntoTable(ptrans, ptbl, 4, "Amy", L"CS");
-	siInsertIntoTable(ptrans, ptbl, 3, "Jack", L"LT");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 1, "John", L"LT");
+	siInsertIntoTable(ptrans, ptbl, NULL, 4, "Amy", L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 3, "Jack", L"LT");
 
-	/*fp = fopen("test.db", "wb");
+	
+
+	fp = fopen("test.db", "wb");
 
 	if (NULL != fp)
 	{
@@ -77,9 +91,9 @@ int main()
 
 		fclose(fp);
 	}
-	*/
+	
 
-	siDeleteFromTable(ptrans, ptbl, 0);
+	siDeleteFromTable(ptrans, ptbl, NULL, 0);
 
 	siAddTableColumn(ptrans, ptbl, &tbh);
 
@@ -88,6 +102,8 @@ int main()
 	siUpdateTableCell(ptrans, ptbl, "Name", 0, 0);
 
 	pv = siCreateViewOfTable(ptbl);
+
+	//PrintMatrix(pv);
 
 	siPrintView(pv);
 

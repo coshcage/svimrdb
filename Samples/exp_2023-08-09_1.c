@@ -48,10 +48,10 @@ P_TABLE CreateTableStudent(P_TRANS ptrans)
 
 void InsertIntoTableStudent(P_TRANS ptrans, P_TABLE ptbl)
 {
-	siInsertIntoTable(ptrans, ptbl, 2023001, "Lisa",  'F', 20, "CS");
-	siInsertIntoTable(ptrans, ptbl, 2023002, "John",  'M', 19, "CS");
-	siInsertIntoTable(ptrans, ptbl, 2023003, "Alice", 'F', 18, "MA");
-	siInsertIntoTable(ptrans, ptbl, 2023004, "Jack",  'M', 19, "IS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, "Lisa",  'F', 20, "CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, "John",  'M', 19, "CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023003, "Alice", 'F', 18, "MA");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023004, "Jack",  'M', 19, "IS");
 }
 
 P_TABLE CreateTableCourse(P_TRANS ptrans)
@@ -89,13 +89,13 @@ P_TABLE CreateTableCourse(P_TRANS ptrans)
 
 void InsertIntoTableCourse(P_TRANS ptrans, P_TABLE ptbl)
 {
-	siInsertIntoTable(ptrans, ptbl, 1, "Database",         5, 4);
-	siInsertIntoTable(ptrans, ptbl, 2, "Math",             0, 2);
-	siInsertIntoTable(ptrans, ptbl, 3, "Informatics",      1, 4);
-	siInsertIntoTable(ptrans, ptbl, 4, "Operating System", 6, 3);
-	siInsertIntoTable(ptrans, ptbl, 5, "Data Structure",   7, 4);
-	siInsertIntoTable(ptrans, ptbl, 6, "Data Processing",  0, 2);
-	siInsertIntoTable(ptrans, ptbl, 7, "PASCAL",           6, 4);
+	siInsertIntoTable(ptrans, ptbl, NULL, 1, "Database",         5, 4);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Math",             0, 2);
+	siInsertIntoTable(ptrans, ptbl, NULL, 3, "Informatics",      1, 4);
+	siInsertIntoTable(ptrans, ptbl, NULL, 4, "Operating System", 6, 3);
+	siInsertIntoTable(ptrans, ptbl, NULL, 5, "Data Structure",   7, 4);
+	siInsertIntoTable(ptrans, ptbl, NULL, 6, "Data Processing",  0, 2);
+	siInsertIntoTable(ptrans, ptbl, NULL, 7, "PASCAL",           6, 4);
 }
 
 P_TABLE CreateTableSC(P_TRANS ptrans)
@@ -130,15 +130,15 @@ void InsertIntoTableSC(P_TRANS ptrans, P_TABLE ptbl)
 {
 	float f;
 	f = 92.0f;
-	siInsertIntoTable(ptrans, ptbl, 2023001, 1, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 1, &f);
 	f = 85.0f;
-	siInsertIntoTable(ptrans, ptbl, 2023001, 2, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 2, &f);
 	f = 88.0f;
-	siInsertIntoTable(ptrans, ptbl, 2023001, 3, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 3, &f);
 	f = 90.0f;
-	siInsertIntoTable(ptrans, ptbl, 2023002, 2, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 2, &f);
 	f = 80.0f;
-	siInsertIntoTable(ptrans, ptbl, 2023002, 3, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 3, &f);
 }
 
 int main()
