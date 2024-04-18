@@ -206,12 +206,13 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 
 				++da.ptbl->curln;
 
-				memmove
-				(
-					&da.ptbl->tbldata.arrz.pdata[(da.data.datpl.sizln + 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
-					&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
-					(da.ptbl->curln - 1 - da.data.datpl.sizln) * sizeof(P_CELL) * da.ptbl->tbldata.col
-				);
+				if (da.data.datpl.sizln + 1 != da.ptbl->curln)
+					memmove
+					(
+						&da.ptbl->tbldata.arrz.pdata[(da.ptbl->curln - 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
+						&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
+						sizeof(P_CELL) * da.ptbl->tbldata.col
+					);
 
 				memcpy(&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col], ppc, sizeof(P_CELL) * da.ptbl->tbldata.col);
 				free(ppc);

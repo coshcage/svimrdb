@@ -755,12 +755,15 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t 
 			siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)));
 		}
 
-		memmove
-		(
-			&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
-			&ptbl->tbldata.arrz.pdata[(ln + 1) * sizeof(P_CELL) * ptbl->tbldata.col],
-			(ptbl->curln - 1 - ln) * sizeof(P_CELL) * ptbl->tbldata.col
-		);
+		if (ln + 1 != ptbl->curln)
+		{
+			memmove
+			(
+				&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
+				&ptbl->tbldata.arrz.pdata[(ptbl->curln - 1) * sizeof(P_CELL) * ptbl->tbldata.col],
+				sizeof(P_CELL) * ptbl->tbldata.col
+			);
+		}
 
 		--ptbl->curln;
 
