@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0130242055L00197
+ * File ID:     0628231947A0418240133L00212
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
@@ -50,21 +50,25 @@ typedef enum en_ColRstct
 /* Table header element. */
 typedef struct st_TBLHDR
 {
-	CellType ct;     /* Data type. */
-	char * strname;  /* Column name. */
-	ColRstct cr;     /* Restriction. */
-	P_HSHTBL_C phsh; /* Hash table for searching. */
+	CellType   ct;      /* Data type. */
+	char *     strname; /* Column name. */
+	ColRstct   cr;      /* Restriction. */
+	P_HSHTBL_C phsh;    /* Hash table for searching. */
 } TBLHDR, * P_TBLHDR;
 
 /* Selection function. */
 typedef BOOL(*SICBF_SELECT)(P_CELL * pitem, size_t param);
 
+/* Table augmentation function. */
+typedef size_t(*SICBF_TBLAUG)(size_t curln, size_t ln);
+
 /* Table structure. */
 typedef struct st_TABLE
 {
-	char * tblname; /* Table name. */
-	ARRAY_Z header; /* Table header. */
-	MATRIX tbldata; /* Table data. */
+	char *  tblname; /* Table name. */
+	ARRAY_Z header;  /* Table header. */
+	size_t  curln;   /* Current line. */
+	MATRIX  tbldata; /* Table data. */
 } TABLE, * P_TABLE;
 
 /* Lock type. */
@@ -129,7 +133,7 @@ typedef struct st_DATALT
 typedef struct st_TRANS
 {
 	DEQUE_DL qoprlst; /* Operation list. */
-	SET_T setlock;    /* Lock set. */
+	SET_T    setlock; /* Lock set. */
 } TRANS, * P_TRANS;
 
 /* Table reference. */
@@ -152,6 +156,9 @@ size_t siHashWString(const void * pkey);
 P_NODE_S hshSearchCPlusA(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
 P_NODE_S hshSearchCPlusW(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
 size_t siPlatformSize(void);
+void siPrintSystemVersion(void);
+size_t sicbftaDefaultIncrease(size_t curln, size_t ln);
+size_t sicbftaDefaultDecrease(size_t curln, size_t ln);
 /* Relational algebraic functions. */
 P_MATRIX siCreateUniqueView(P_MATRIX pmtx);
 P_MATRIX siCreateUnionView(P_MATRIX pmtxa, P_MATRIX pmtxb);
@@ -173,8 +180,8 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr);
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl);
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl);
-BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...);
-BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t col);
+BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...);
+BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln);
 BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col);
 BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
 BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
@@ -187,10 +194,20 @@ void siReleaseAllTransaction();
 BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
-#define BKSNUM 1021 /* 1021 is a prime. */
+#define BKSNUM         1021 /* 1021 is a prime. */
+#define TBL_LN_BUF_SIZ 512
+
 // #define strdup _strdup /* POSIX compliant for visual C compiler. */
 
-//#define pthread_mutex_lock(abc)
-//#define pthread_mutex_unlock(def)
+/* The following macros are for single thread debugging. */
+/*
+#define pthread_mutex_lock(abc)
+#define pthread_mutex_unlock(def)
+#define pthread_mutex_t int
+#define PTHREAD_MUTEX_INITIALIZER 0
+*/
+
+/* System version. */
+#define SYS_VER "1.0.1"
 
 #endif

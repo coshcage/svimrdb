@@ -2,12 +2,13 @@
  * Name:        sixmem.c
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0809231000L00388
+ * File ID:     0714231200H0418240130L00394
  * License:     GPLv2.
  */
 #include "sixmem.h"
-#include <string.h> /* Using funtion strdup. */
-#include <stdlib.h> /* Using function malloc. */
+#include "svimrdb.h" /* Using macro TBL_LN_BUF_SIZ. */
+#include <string.h>  /* Using funtion strdup. */
+#include <stdlib.h>  /* Using function malloc. */
 
 /* DB Table file structure.
  * platform size for a size_t.
@@ -149,18 +150,18 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 			_siWriteString(((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->strname, fp);
 			
 		/* Write table size. */
-		fwrite(&ptbl->tbldata.ln, sizeof(size_t), 1, fp);
+		fwrite(&ptbl->curln, sizeof(size_t), 1, fp);
 		fwrite(&ptbl->tbldata.col, sizeof(size_t), 1, fp);
 
 		oldl = ftell(fp);
 
 		/* Fill xcell. */
-		for (i = 0; i < ptbl->tbldata.ln * ptbl->tbldata.col; ++i)
+		for (i = 0; i < ptbl->curln * ptbl->tbldata.col; ++i)
 			fwrite(&xc, sizeof(XCELL), 1, fp);
 
 		/* Fill content. */
 		ppc = (P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, 0, 0, sizeof(P_CELL));
-		for (i = 0; i < ptbl->tbldata.ln * ptbl->tbldata.col; ++i)
+		for (i = 0; i < ptbl->curln * ptbl->tbldata.col; ++i)
 		{
 			curl = ftell(fp);
 
@@ -237,6 +238,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 
 		if ('d' == magic[0] && 'b' == magic[1] && siPlatformSize() == j)
 		{
+			stdiv_t d;
 			long oldl;
 			XCELL xc;
 			P_CELL * ppc;
@@ -275,10 +277,14 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			fread(&l, sizeof(size_t), 1, fp);
 			fread(&m, sizeof(size_t), 1, fp);
 
+			ptbl->curln = l;
+			d = stdiv(l, TBL_LN_BUF_SIZ);
+			l = TBL_LN_BUF_SIZ * d.quot + (0 == d.rem ? 0 : TBL_LN_BUF_SIZ);
+
 			strInitMatrix(&ptbl->tbldata, l, m, sizeof(P_CELL));
 			ppc = (P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, 0, 0, sizeof(P_CELL));
 
-			for (i = 0; i < l * m; ++i)
+			for (i = 0; i < ptbl->curln * m; ++i)
 			{
 				P_CELL pc = NULL;
 				union un_CellData
@@ -334,7 +340,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 				*(ppc++) = pc;
 				fseek(fp, oldl, SEEK_SET);
 			}
-			for (i = 0; i < ptbl->tbldata.ln; ++i)
+			for (i = 0; i < ptbl->curln; ++i)
 			{
 				for (j = 0; j < ptbl->tbldata.col; ++j)
 				{

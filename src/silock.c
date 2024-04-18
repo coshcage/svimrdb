@@ -100,7 +100,7 @@ static int _sicbftvsTrans(void * pitem, size_t param)
  *    ptrans Pointer to a transaction.
  *      pobj Pointer to an object.
  *        lt Lock type.
- * Return value:  TRUE lock acquired. FALSE lock refused.
+ * Return value:  TRUE lock accuired. FALSE lock refused.
  * Caution:       N/A.
  * Tip:           N/A.
  */

@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0130242055L00360
+ * File ID:     0702231427D0418240134L00367
  * License:     GPLv2.
  */
 
@@ -143,10 +143,14 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			siDeleteCell(&da.data.dacell.before);
 			break;
 		case AT_ADD_TUPLE:
-			siDeleteFromTable(NULL, da.ptbl, da.data.datpl.sizln);
+			siDeleteFromTable(NULL, da.ptbl, NULL, da.data.datpl.sizln);
 			break;
 		case AT_DEL_TUPLE:
-			strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln + 1, da.ptbl->tbldata.col, sizeof(P_CELL));
+			i = sicbftaDefaultIncrease(da.ptbl->curln + 1, da.ptbl->tbldata.ln);
+
+			if (i != da.ptbl->tbldata.ln)
+				strResizeMatrix(&da.ptbl->tbldata, i, da.ptbl->tbldata.col, sizeof(P_CELL));
+
 			ppc = (P_CELL *)malloc(sizeof(P_CELL) * da.ptbl->tbldata.col);
 			if (ppc)
 			{
@@ -200,15 +204,18 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 					}
 				}
 
+				++da.ptbl->curln;
+
 				memmove
 				(
 					&da.ptbl->tbldata.arrz.pdata[(da.data.datpl.sizln + 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
 					&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
-					(da.ptbl->tbldata.ln - 1 - da.data.datpl.sizln) * sizeof(P_CELL) * da.ptbl->tbldata.col
+					(da.ptbl->curln - 1 - da.data.datpl.sizln) * sizeof(P_CELL) * da.ptbl->tbldata.col
 				);
 
 				memcpy(&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col], ppc, sizeof(P_CELL) * da.ptbl->tbldata.col);
 				free(ppc);
+
 			}
 
 			for (i = 0; i < strLevelArrayZ(&da.data.datpl.tupledat); ++i)
@@ -237,7 +244,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			if (NULL != strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln, da.ptbl->tbldata.col + 1, sizeof(P_CELL)))
 			{
 				size_t i;
-				for (i = 0; i < da.ptbl->tbldata.ln; ++i)
+				for (i = 0; i < da.ptbl->curln; ++i)
 				{
 					P_CELL pc;
 					memmove

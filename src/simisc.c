@@ -2,13 +2,14 @@
  * Name:        simisc.c
  * Description: Misc functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0703231856E1101231110L00287
+ * File ID:     0703231856E0418240132L00330
  * License:     GPLv2.
  */
 
 #include <ctype.h>  /* Using function tolower. */
 #include <stdint.h> /* Using type uint32_t, uint64_t. */
 #include <string.h> /* Using function strcmp. */
+#include <stdio.h>  /* Using function printf. */
 #include "svimrdb.h"
 
 int _siCBFCompareNodeDataSPlusA(void * pitem, size_t param);
@@ -156,6 +157,18 @@ size_t siPlatformSize(void)
 	return sizeof(size_t);
 }
 
+/* Function name: siPrintSystemVersion
+ * Description:   Print system version.
+ * Parameter:     N/A.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
+void siPrintSystemVersion(void)
+{
+	(void)printf("%s", SYS_VER);
+}
+
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
  * Function name: _siCBFCompareNodeDataSPlusA
  * Description:   Used to compare data of NODE_S for strings.
@@ -283,4 +296,34 @@ P_NODE_S _siSearchLinkedListSCPlusW(LIST_S list, const void * pitem, size_t size
 P_NODE_S hshSearchCPlusW(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size)
 {
 	return _siSearchLinkedListSCPlusW(*(P_NODE_S *)(pht->pdata + (cbfhsh(pkey) % strLevelArrayZ(pht)) * sizeof(P_NODE_S)), pkey, size);
+}
+
+/* Function name: sicbftaDefaultIncrease
+ * Description:   Default table increasing function.
+ * Parameters:
+ *      curln Input the current table length value.
+ *         ln Input total table length value.
+ * Return value:  New table length value.
+ */
+size_t sicbftaDefaultIncrease(size_t curln, size_t ln)
+{
+	if (curln == ln)
+		return ln + TBL_LN_BUF_SIZ;
+	else
+		return ln;
+}
+
+/* Function name: sicbftaDefaultDecrease
+ * Description:   Default table decreasing function.
+ * Parameters:
+ *      curln Input the current table length value.
+ *         ln Input total table length value.
+ * Return value:  New table length value.
+ */
+size_t sicbftaDefaultDecrease(size_t curln, size_t ln)
+{
+	if (ln - TBL_LN_BUF_SIZ > curln)
+		return ln - TBL_LN_BUF_SIZ;
+	else
+		return ln;
 }

@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0130242056L00996
+ * File ID:     0628231947C0418240133L01049
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS
@@ -168,6 +168,31 @@ void siDestroyView(P_MATRIX pmtx)
 	}
 }
 
+/* Function name: siDestroyTable
+ * Description:   Uninitialize a table.
+ * Parameter:
+ *      ptbl Pointer to a table.
+ * Return value:  N/A.
+ * Caution:       N/A.
+ * Tip:           N/A.
+ */
+void siDestroyTable(P_TABLE ptbl)
+{
+	if (NULL != ptbl)
+	{
+		size_t i, j;
+		for (i = 0; i < ptbl->curln; ++i)
+		{
+			for (j = 0; j < ptbl->tbldata.col; ++j)
+			{
+				P_CELL * ppcold = (P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, i, j, sizeof(P_CELL));
+				if (NULL != *ppcold)
+					siDeleteCell(ppcold);
+			}
+		}
+	}
+}
+
 /* Function name: siPrintView
  * Description:   Print a view to stdout.
  * Parameter:
@@ -262,9 +287,9 @@ ptrdiff_t siGetColumnByString(P_TABLE ptbl, char * strname)
  */
 P_MATRIX siCreateViewOfTable(P_TABLE ptbl)
 {
-	P_MATRIX pmtx = strCreateMatrix(ptbl->tbldata.ln, ptbl->tbldata.col, sizeof(P_CELL));
+	P_MATRIX pmtx = strCreateMatrix(ptbl->curln, ptbl->tbldata.col, sizeof(P_CELL));
 	if (NULL != pmtx)
-		strCopyMatrix(pmtx, &ptbl->tbldata, sizeof(P_CELL));
+		strProjectMatrix(pmtx, 0, 0, &ptbl->tbldata, 0, 0, sizeof(P_CELL));
 	return pmtx;
 }
 
@@ -340,7 +365,8 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 				break;
 			}
 		}
-		strInitMatrix(&ptbl->tbldata, 0, parrhdr->num, sizeof(P_CELL));
+		ptbl->curln = 0;
+		strInitMatrix(&ptbl->tbldata, TBL_LN_BUF_SIZ, parrhdr->num, sizeof(P_CELL));
 	}
 
 	if (NULL != ptrans)
@@ -373,7 +399,9 @@ P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl)
 		{
 			size_t i, j;
 			
-			for (i = 0; i < ptbl->tbldata.ln; ++i)
+			pr->curln = ptbl->curln;
+
+			for (i = 0; i < ptbl->curln; ++i)
 			{
 				for (j = 0; j < ptbl->tbldata.col; ++j)
 				{
@@ -425,7 +453,7 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 
 	if (NULL != ptbl->tbldata.arrz.pdata)
 	{
-		siDestroyView(&ptbl->tbldata);
+		siDestroyTable(ptbl);
 		strFreeMatrix(&ptbl->tbldata);
 	}
 	free(ptbl);
@@ -437,195 +465,209 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
  * Parameter:
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to insert.
+ *     cbfta Pointer to an increasing function.
+ *           If this parameter equals NULL, default increasing function will be taken.
  *       ... Parameters you want to insert.
  * Return value:  TRUE insertion succeeded. FALSE insertion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
+BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 {
-	size_t i, j;
+	va_list arg;
+	
+	size_t i, j, k, l;
 	BOOL bins = TRUE;
-	j = ptbl->tbldata.ln;
-	if (NULL != strResizeMatrix(&(ptbl->tbldata), ptbl->tbldata.ln + 1, ptbl->tbldata.col, sizeof(P_CELL)))
-	{
-		va_list arg;
-		va_start(arg, ptbl);
+
+	va_start(arg, cbfta);
+
+	j = ptbl->curln;
+
+	if (NULL == cbfta)
+		cbfta = sicbftaDefaultIncrease;
+
+	k = cbfta(j + 1, ptbl->tbldata.ln);
+	l = ptbl->tbldata.ln;
+	
+	if (k != ptbl->tbldata.ln)
+		if (NULL == strResizeMatrix(&(ptbl->tbldata), k, ptbl->tbldata.col, sizeof(P_CELL)))
+			return FALSE;
 		
-		for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
+	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
+	{
+		union un_CellData
 		{
-			union un_CellData
+			char   c;
+			short  s;
+			int    i;
+			long   l;
+			float  f;
+			double d;
+		} cd;
+		P_CELL pc;
+		P_TBLHDR pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
+		switch (pt->ct)
+		{
+		case CT_CHAR:
+			cd.c = (char)va_arg(arg, int);
+			pc = siCreateCell(&cd.c, pt->ct);
+			if (NULL != pt->phsh)
 			{
-				char   c;
-				short  s;
-				int    i;
-				long   l;
-				float  f;
-				double d;
-			} cd;
-			P_CELL pc;
-			P_TBLHDR pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
-			switch (pt->ct)
-			{
-			case CT_CHAR:
-				cd.c = (char)va_arg(arg, int);
-				pc = siCreateCell(&cd.c, pt->ct);
-				if (NULL != pt->phsh)
+				switch (pt->cr)
 				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashChar, &cd.c, sizeof(char)))
-							hshInsertC(pt->phsh, siHashChar, &cd.c, sizeof(char));
-						else
-							bins = FALSE;
-						break;
-					}
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashChar, &cd.c, sizeof(char)))
+						hshInsertC(pt->phsh, siHashChar, &cd.c, sizeof(char));
+					else
+						bins = FALSE;
+					break;
 				}
-				break;
-			case CT_SHORT:
-				cd.s = va_arg(arg, int);
-				pc = siCreateCell(&cd.s, pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashShort, &cd.s, sizeof(short)))
-							hshInsertC(pt->phsh, siHashShort, &cd.s, sizeof(short));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_INTEGER:
-				cd.i = va_arg(arg, int);
-				pc = siCreateCell(&cd.i, pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashInt, &cd.i, sizeof(int)))
-							hshInsertC(pt->phsh, siHashInt, &cd.i, sizeof(int));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_LONG:
-				cd.l = va_arg(arg, long);
-				pc = siCreateCell(&cd.l, pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashLong, &cd.l, sizeof(long)))
-							hshInsertC(pt->phsh, siHashLong, &cd.l, sizeof(long));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_FLOAT:
-				cd.f = *(float *)va_arg(arg, float *);
-				pc = siCreateCell(&cd.f, pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashFloat, &cd.f, sizeof(float)))
-							hshInsertC(pt->phsh, siHashFloat, &cd.f, sizeof(float));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_DOUBLE:
-				cd.d = *(double *)va_arg(arg, double *);
-				pc = siCreateCell(&cd.d, pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchC(pt->phsh, siHashDouble, &cd.d, sizeof(double)))
-							hshInsertC(pt->phsh, siHashDouble, &cd.d, sizeof(double));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_STRING:
-				pc = siCreateCell(va_arg(arg, char *), pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchCPlusA(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
-							hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
-			case CT_WSTRING:
-				pc = siCreateCell(va_arg(arg, wchar_t *), pt->ct);
-				if (NULL != pt->phsh)
-				{
-					switch (pt->cr)
-					{
-					case CR_UNIQUE:
-					case CR_PRIMARY_KEY:
-						if (NULL == hshSearchCPlusW(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
-							hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
-						else
-							bins = FALSE;
-						break;
-					}
-				}
-				break;
 			}
-			if (bins)
-				strSetValueMatrix(&ptbl->tbldata, j, i, &pc, sizeof(P_CELL));
-			else
-				break;
+			break;
+		case CT_SHORT:
+			cd.s = va_arg(arg, int);
+			pc = siCreateCell(&cd.s, pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashShort, &cd.s, sizeof(short)))
+						hshInsertC(pt->phsh, siHashShort, &cd.s, sizeof(short));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_INTEGER:
+			cd.i = va_arg(arg, int);
+			pc = siCreateCell(&cd.i, pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashInt, &cd.i, sizeof(int)))
+						hshInsertC(pt->phsh, siHashInt, &cd.i, sizeof(int));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_LONG:
+			cd.l = va_arg(arg, long);
+			pc = siCreateCell(&cd.l, pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashLong, &cd.l, sizeof(long)))
+						hshInsertC(pt->phsh, siHashLong, &cd.l, sizeof(long));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_FLOAT:
+			cd.f = *(float *)va_arg(arg, float *);
+			pc = siCreateCell(&cd.f, pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashFloat, &cd.f, sizeof(float)))
+						hshInsertC(pt->phsh, siHashFloat, &cd.f, sizeof(float));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_DOUBLE:
+			cd.d = *(double *)va_arg(arg, double *);
+			pc = siCreateCell(&cd.d, pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchC(pt->phsh, siHashDouble, &cd.d, sizeof(double)))
+						hshInsertC(pt->phsh, siHashDouble, &cd.d, sizeof(double));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_STRING:
+			pc = siCreateCell(va_arg(arg, char *), pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchCPlusA(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
+						hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
+		case CT_WSTRING:
+			pc = siCreateCell(va_arg(arg, wchar_t *), pt->ct);
+			if (NULL != pt->phsh)
+			{
+				switch (pt->cr)
+				{
+				case CR_UNIQUE:
+				case CR_PRIMARY_KEY:
+					if (NULL == hshSearchCPlusW(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
+						hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+					else
+						bins = FALSE;
+					break;
+				}
+			}
+			break;
 		}
-
-		va_end(arg);
-
-		if (NULL != ptrans && bins)
-		{
-			DATALT da;
-			da.at = AT_ADD_TUPLE;
-			da.ptbl = ptbl;
-			da.data.datpl.sizln = j;
-
-			queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
-		}
-
-		if (!bins)
-			strResizeMatrix(&(ptbl->tbldata), j, ptbl->tbldata.col, sizeof(P_CELL));
-
-		return bins;
+		if (bins)
+			strSetValueMatrix(&ptbl->tbldata, j, i, &pc, sizeof(P_CELL));
+		else
+			break;
 	}
-	return FALSE;
+
+	va_end(arg);
+
+	if (NULL != ptrans && bins)
+	{
+		DATALT da;
+		da.at = AT_ADD_TUPLE;
+		da.ptbl = ptbl;
+		da.data.datpl.sizln = j;
+
+		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
+	}
+
+	if (!bins)
+		if (l != ptbl->tbldata.ln)
+			strResizeMatrix(&ptbl->tbldata, l, ptbl->tbldata.col, sizeof(P_CELL));
+	if (bins)
+		++ptbl->curln;
+
+	return bins;
 }
 
 /* Function name: siDeleteFromTable
@@ -633,14 +675,19 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, ...)
  * Parameter:
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to delete from.
+ *     cbfta Pointer to a decreasing function.
+ *           If this parameter equals NULL, default decreasing function will be taken.
  *        ln Row number you want to delete. Starts from 0.
  * Return value:  TRUE deletion succeeded. FALSE deletion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
+BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln)
 {
-	if (ln < ptbl->tbldata.ln)
+	if (NULL == cbfta)
+		cbfta = sicbftaDefaultDecrease;
+
+	if (ln < ptbl->curln)
 	{
 		size_t i;
 
@@ -712,10 +759,16 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, size_t ln)
 		(
 			&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
 			&ptbl->tbldata.arrz.pdata[(ln + 1) * sizeof(P_CELL) * ptbl->tbldata.col],
-			(ptbl->tbldata.ln - 1 - ln) * sizeof(P_CELL) * ptbl->tbldata.col
+			(ptbl->curln - 1 - ln) * sizeof(P_CELL) * ptbl->tbldata.col
 		);
 
-		strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln - 1, ptbl->tbldata.col, sizeof(P_CELL));
+		--ptbl->curln;
+
+		i = cbfta(ptbl->curln, ptbl->tbldata.ln);
+
+		if (i != ptbl->tbldata.ln)
+			strResizeMatrix(&ptbl->tbldata, i, ptbl->tbldata.col, sizeof(P_CELL));
+
 		return TRUE;
 	}
 	return FALSE;
@@ -956,8 +1009,8 @@ BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 		da.data.dacol.hdr = *(TBLHDR *)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col);
 		da.data.dacol.hdr.strname = strdup((*(TBLHDR *)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col)).strname);
 
-		strInitArrayZ(&da.data.dacol.coldat, ptbl->tbldata.ln, sizeof(P_CELL));
-		for (i = 0; i < ptbl->tbldata.ln; ++i)
+		strInitArrayZ(&da.data.dacol.coldat, ptbl->curln, sizeof(P_CELL));
+		for (i = 0; i < ptbl->curln; ++i)
 		{
 			P_CELL pc;
 			strGetValueMatrix(&pc, &ptbl->tbldata, i, col, sizeof(P_CELL));
@@ -976,7 +1029,7 @@ BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 	free(((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col))->strname);
 	strRemoveItemArrayZ(&ptbl->header, sizeof(TBLHDR), col, TRUE);
 
-	for (i = 0; i < ptbl->tbldata.ln; ++i)
+	for (i = 0; i < ptbl->curln; ++i)
 	{
 		siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, i, col, sizeof(P_CELL)));
 
