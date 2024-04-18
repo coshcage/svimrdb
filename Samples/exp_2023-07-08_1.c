@@ -9,17 +9,6 @@
 #include "svimrdb.h"
 #include "sixmem.h"
 
-void PrintMatrix(P_MATRIX pmtx)
-{
-	size_t i, j;
-	for (i = 0; i < pmtx->ln; ++i)
-	{
-		for (j = 0; j < pmtx->col; ++j)
-			printf("%p ", *(P_CELL *)strGetValueMatrix(NULL, pmtx, i, j, sizeof(P_CELL)));
-		printf("\n");
-	}
-}
-
 int main()
 {
 	P_MATRIX pv;
@@ -102,8 +91,6 @@ int main()
 	siUpdateTableCell(ptrans, ptbl, "Name", 0, 0);
 
 	pv = siCreateViewOfTable(ptbl);
-
-	//PrintMatrix(pv);
 
 	siPrintView(pv);
 
