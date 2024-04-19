@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0418240134L00367
+ * File ID:     0702231427D0418240134L00368
  * License:     GPLv2.
  */
 
@@ -206,13 +206,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 
 				++da.ptbl->curln;
 
-				if (da.data.datpl.sizln + 1 != da.ptbl->curln)
-					memmove
-					(
-						&da.ptbl->tbldata.arrz.pdata[(da.ptbl->curln - 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
-						&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
-						sizeof(P_CELL) * da.ptbl->tbldata.col
-					);
+				memmove
+				(
+					&da.ptbl->tbldata.arrz.pdata[(da.data.datpl.sizln + 1) * sizeof(P_CELL) * da.ptbl->tbldata.col],
+					&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col],
+					(da.ptbl->curln - 1 - da.data.datpl.sizln) * sizeof(P_CELL) * da.ptbl->tbldata.col
+				);
 
 				memcpy(&da.ptbl->tbldata.arrz.pdata[da.data.datpl.sizln * sizeof(P_CELL) * da.ptbl->tbldata.col], ppc, sizeof(P_CELL) * da.ptbl->tbldata.col);
 				free(ppc);
@@ -360,7 +359,8 @@ void siReleaseAllTransaction()
 {
 	pthread_mutex_lock(&mtxPST);
 
-	setDeleteT(psetTrans);
+	if (NULL != psetTrans)
+		setDeleteT(psetTrans);
 	psetTrans = NULL;
 
 	pthread_mutex_unlock(&mtxPST);
