@@ -2,7 +2,7 @@
  * Name:        sixmem.c
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0418240130L00394
+ * File ID:     0714231200H0422240734L00395
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -53,12 +53,12 @@ void _siReadString(char * buf, FILE * fp)
 void _siReadWString(wchar_t * buf, FILE * fp)
 {
 	size_t i = 0;
-	while ((i < BUFSIZ - 1) && (*buf = fgetwc(fp)))
+	while ((i < BUFSIZ - 1) && (L'\0' != (*buf = fgetwc(fp))))
 	{
 		++buf;
 		++i;
 	}
-	buf[i] = '\0';
+	buf[i] = L'\0';
 }
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
@@ -78,7 +78,7 @@ void _siWriteString(char * str, FILE * fp)
 		++str;
 	}
 	/* Put 0. */
-	fputc(*str, fp);
+	fputc('\0', fp);
 }
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
@@ -98,7 +98,7 @@ void _siWriteWString(wchar_t * str, FILE * fp)
 		++str;
 	}
 	/* Put 0. */
-	fputwc(*str, fp);
+	fputwc(L'\0', fp);
 }
 
 /* Function name: siSaveTable
@@ -264,6 +264,7 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 			{
 				fread(&((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct, sizeof(size_t), 1, fp);
 				fread(&((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->cr, sizeof(size_t), 1, fp);
+				((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->phsh = NULL;
 			}
 
 			/* Read column names. */
