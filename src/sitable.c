@@ -2,10 +2,10 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0418240133L01049
+ * File ID:     0628231947C0504240116L01126
  * License:     GPLv2.
  */
-#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1 /* For MSVC debugging. */
 #include <stdio.h>  /* Using function printf, macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, qsort. */
 #include <string.h> /* Using function strdup, memmove. */
@@ -460,26 +460,23 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
 	
 }
 
-/* Function name: siInsertIntoTable
+/* Function name: siInsertIntoTableBase
  * Description:   Insert a tuple into a table.
  * Parameter:
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to insert.
  *     cbfta Pointer to an increasing function.
  *           If this parameter equals NULL, default increasing function will be taken.
- *       ... Parameters you want to insert.
+ *   parrarg Pointer of array of parameters you want to insert.
+ *           Each element of this array is (void *).
  * Return value:  TRUE insertion succeeded. FALSE insertion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
+BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg)
 {
-	va_list arg;
-	
 	size_t i, j, k, l;
 	BOOL bins = TRUE;
-
-	va_start(arg, cbfta);
 
 	j = ptbl->curln;
 
@@ -488,11 +485,11 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 
 	k = cbfta(j + 1, ptbl->tbldata.ln);
 	l = ptbl->tbldata.ln;
-	
+
 	if (k != ptbl->tbldata.ln)
 		if (NULL == strResizeMatrix(&(ptbl->tbldata), k, ptbl->tbldata.col, sizeof(P_CELL)))
 			return FALSE;
-		
+
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
 		union un_CellData
@@ -506,10 +503,11 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 		} cd;
 		P_CELL pc;
 		P_TBLHDR pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
+		void * parrg = strLocateItemArrayZ(parrarg, sizeof(void *), i);
 		switch (pt->ct)
 		{
 		case CT_CHAR:
-			cd.c = (char)va_arg(arg, int);
+			cd.c = *(char *)parrg;
 			pc = siCreateCell(&cd.c, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -526,7 +524,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_SHORT:
-			cd.s = va_arg(arg, int);
+			cd.s = *(short *)parrg;
 			pc = siCreateCell(&cd.s, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -543,7 +541,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_INTEGER:
-			cd.i = va_arg(arg, int);
+			cd.i = *(int *)parrg;
 			pc = siCreateCell(&cd.i, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -560,7 +558,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_LONG:
-			cd.l = va_arg(arg, long);
+			cd.l = *(long *)parrg;
 			pc = siCreateCell(&cd.l, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -577,7 +575,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_FLOAT:
-			cd.f = *(float *)va_arg(arg, float *);
+			cd.f = *(float *)parrg;
 			pc = siCreateCell(&cd.f, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -594,7 +592,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_DOUBLE:
-			cd.d = *(double *)va_arg(arg, double *);
+			cd.d = *(double *)parrg;
 			pc = siCreateCell(&cd.d, pt->ct);
 			if (NULL != pt->phsh)
 			{
@@ -611,7 +609,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_STRING:
-			pc = siCreateCell(va_arg(arg, char *), pt->ct);
+			pc = siCreateCell((char *)parrg, pt->ct);
 			if (NULL != pt->phsh)
 			{
 				switch (pt->cr)
@@ -627,7 +625,7 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			}
 			break;
 		case CT_WSTRING:
-			pc = siCreateCell(va_arg(arg, wchar_t *), pt->ct);
+			pc = siCreateCell((wchar_t *)parrg, pt->ct);
 			if (NULL != pt->phsh)
 			{
 				switch (pt->cr)
@@ -646,10 +644,11 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 		if (bins)
 			strSetValueMatrix(&ptbl->tbldata, j, i, &pc, sizeof(P_CELL));
 		else
+		{
+			siDeleteCell(&pc);
 			break;
+		}
 	}
-
-	va_end(arg);
 
 	if (NULL != ptrans && bins)
 	{
@@ -668,6 +667,84 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 		++ptbl->curln;
 
 	return bins;
+}
+
+/* Function name: siInsertIntoTable
+ * Description:   Insert a tuple into a table. This is a wrapper of variadic function.
+ * Parameter:
+ *    ptrans Pointer to a transaction.
+ *      ptbl Pointer to a table you want to insert.
+ *     cbfta Pointer to an increasing function.
+ *           If this parameter equals NULL, default increasing function will be taken.
+ *       ... Parameters you want to insert.
+ * Return value:  TRUE insertion succeeded. FALSE insertion failed.
+ * Caution:       Parameter ptbl must be allocated first.
+ * Tip:           N/A.
+ */
+BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
+{
+	size_t i;
+	BOOL r;
+	P_ARRAY_Z parrg;
+	va_list arg;
+	union un_CellData
+	{
+		char   c;
+		short  s;
+		int    i;
+		long   l;
+		float  f;
+		double d;
+	} cd;
+
+	va_start(arg, cbfta);
+
+	parrg = strCreateArrayZ(strLevelArrayZ(&ptbl->header), sizeof(void *));
+
+	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
+	{
+		switch (((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct)
+		{
+		case CT_CHAR:
+			cd.c = va_arg(arg, int);
+			strInsertItemArrayZ(parrg, &cd.c, sizeof(void *), i);
+			break;
+		case CT_SHORT:
+			cd.s = va_arg(arg, int);
+			strInsertItemArrayZ(parrg, &cd.s, sizeof(void *), i);
+			break;
+		case CT_INTEGER:
+			cd.i = va_arg(arg, int);
+			strInsertItemArrayZ(parrg, &cd.i, sizeof(void *), i);
+			break;
+		case CT_LONG:
+			cd.l = va_arg(arg, long);
+			strInsertItemArrayZ(parrg, &cd.l, sizeof(void *), i);
+			break;
+		case CT_FLOAT:
+			cd.f = *(float *)va_arg(arg, float *);
+			strInsertItemArrayZ(parrg, &cd.f, sizeof(void *), i);
+			break;
+		case CT_DOUBLE:
+			cd.d = *(double *)va_arg(arg, double *);
+			strInsertItemArrayZ(parrg, &cd.d, sizeof(void *), i);
+			break;
+		case CT_STRING:
+			strInsertItemArrayZ(parrg, va_arg(arg, char *), sizeof(void *), i);
+			break;
+		case CT_WSTRING:
+			strInsertItemArrayZ(parrg, va_arg(arg, wchar_t *), sizeof(void *), i);
+			break;
+		}
+
+		va_end(arg);
+	}
+
+	r = siInsertIntoTableBase(ptrans, ptbl, cbfta, parrg);
+
+	strDeleteArrayZ(parrg);
+
+	return r;
 }
 
 /* Function name: siDeleteFromTable
@@ -755,15 +832,12 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t 
 			siDeleteCell((P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)));
 		}
 
-		if (ln + 1 != ptbl->curln)
-		{
-			memmove
-			(
-				&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
-				&ptbl->tbldata.arrz.pdata[(ptbl->curln - 1) * sizeof(P_CELL) * ptbl->tbldata.col],
-				sizeof(P_CELL) * ptbl->tbldata.col
-			);
-		}
+		memmove
+		(
+			&ptbl->tbldata.arrz.pdata[ln * sizeof(P_CELL) * ptbl->tbldata.col],
+			&ptbl->tbldata.arrz.pdata[(ln + 1) * sizeof(P_CELL) * ptbl->tbldata.col],
+			(ptbl->curln - 1 - ln) * sizeof(P_CELL) * ptbl->tbldata.col
+		);
 
 		--ptbl->curln;
 

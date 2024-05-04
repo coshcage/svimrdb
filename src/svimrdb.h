@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0418240133L00214
+ * File ID:     0628231947A0504240117L00215
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
@@ -180,6 +180,7 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr);
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl);
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl);
+BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg);
 BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...);
 BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln);
 BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col);
@@ -208,6 +209,6 @@ void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 */
 
 /* System version. */
-#define SYS_VER "1.0.1"
+#define SYS_VER "1.0.2"
 
 #endif
