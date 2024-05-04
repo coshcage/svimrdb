@@ -130,15 +130,15 @@ void InsertIntoTableSC(P_TRANS ptrans, P_TABLE ptbl)
 {
 	float f;
 	f = 92.0f;
-	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 1, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 1, 92.0);
 	f = 85.0f;
-	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 2, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 2, 85.0);
 	f = 88.0f;
-	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 3, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023001, 3, 88.0);
 	f = 90.0f;
-	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 2, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 2, 90.0);
 	f = 80.0f;
-	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 3, &f);
+	siInsertIntoTable(ptrans, ptbl, NULL, 2023002, 3, 80.0);
 }
 
 int main()

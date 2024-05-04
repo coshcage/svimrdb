@@ -11,7 +11,6 @@
 
 int main()
 {
-	int i;
 	P_MATRIX pv;
 	P_TRANS ptrans;
 	P_TABLE ptbl, ptbl2;
@@ -50,11 +49,11 @@ int main()
 	while (TRUE != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
 		;
 
-	i = 2; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Lisa", L"CS");
-	i = 2; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Lisa", L"CS");
-	i = 1; siInsertIntoTable(ptrans, ptbl, NULL, &i, "John", L"LT");
-	i = 4; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Amy",  L"CS");
-	i = 3; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Jack", L"LT");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 1, "John", L"LT");
+	siInsertIntoTable(ptrans, ptbl, NULL, 4, "Amy",  L"CS");
+	siInsertIntoTable(ptrans, ptbl, NULL, 3, "Jack", L"LT");
 
 	fp = fopen("test.db", "wb");
 
