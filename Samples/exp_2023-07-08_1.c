@@ -11,9 +11,10 @@
 
 int main()
 {
+	int i;
 	P_MATRIX pv;
 	P_TRANS ptrans;
-	P_TABLE ptbl;
+	P_TABLE ptbl, ptbl2;
 	P_ARRAY_Z parrhdr, pa = NULL;
 	FILE * fp;
 
@@ -42,19 +43,18 @@ int main()
 
 	ptbl = siCreateTable(ptrans, "Student", parrhdr);
 
-	while (TRUE != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
-		;
 
 	while (TRUE != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
 		;
 
-	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
-	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
-	siInsertIntoTable(ptrans, ptbl, NULL, 1, "John", L"LT");
-	siInsertIntoTable(ptrans, ptbl, NULL, 4, "Amy", L"CS");
-	siInsertIntoTable(ptrans, ptbl, NULL, 3, "Jack", L"LT");
+	while (TRUE != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
+		;
 
-	
+	i = 2; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Lisa", L"CS");
+	i = 2; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Lisa", L"CS");
+	i = 1; siInsertIntoTable(ptrans, ptbl, NULL, &i, "John", L"LT");
+	i = 4; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Amy",  L"CS");
+	i = 3; siInsertIntoTable(ptrans, ptbl, NULL, &i, "Jack", L"LT");
 
 	fp = fopen("test.db", "wb");
 
@@ -68,9 +68,9 @@ int main()
 
 	if (NULL != fp)
 	{
-		ptbl = siLoadTable(fp, 0);
+		ptbl2 = siLoadTable(fp, 0);
 
-		pv = siCreateViewOfTable(ptbl);
+		pv = siCreateViewOfTable(ptbl2);
 
 		siSortView(pv, 1, TRUE);
 
@@ -78,9 +78,10 @@ int main()
 
 		strDeleteMatrix(pv);
 
+		siDeleteTable(NULL, ptbl2);
+
 		fclose(fp);
 	}
-	
 
 	siDeleteFromTable(ptrans, ptbl, NULL, 0);
 
