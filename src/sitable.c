@@ -2,7 +2,7 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0504240116L01131
+ * File ID:     0628231947C0504240441L01150
  * License:     GPLv2.
  */
 #define _CRT_SECURE_NO_WARNINGS 1 /* For MSVC debugging. */
@@ -685,60 +685,76 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 {
 	size_t i;
 	BOOL r;
-	P_ARRAY_Z parrg;
+	P_ARRAY_Z parrg, parrbuf;
+	void * pbuf;
 	va_list arg;
-
-	union un_PCellData
-	{
-		char *    pc;
-		short *   ps;
-		int *     pi;
-		long *    pl;
-		float *   pf;
-		double *  pd;
-		char *    pstr;
-		wchar_t * pwstr;
-	} pcd;
 
 	va_start(arg, cbfta);
 
 	parrg = strCreateArrayZ(strLevelArrayZ(&ptbl->header), sizeof(void *));
+	parrbuf = strCreateArrayZ(strLevelArrayZ(&ptbl->header), sizeof(void *));
 
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
-		switch (((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct)
+		union un_CellData
+		{
+			char   c;
+			short  s;
+			int    i;
+			long   l;
+			float  f;
+			double d;
+		} cd;
+		P_CELL pc;
+		CellType ct = ((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i))->ct;
+
+		switch (ct)
 		{
 		case CT_CHAR:
-			pcd.pc = va_arg(arg, char *);
-			strInsertItemArrayZ(parrg, &pcd.pc, sizeof(void *), i);
+			cd.c = va_arg(arg, int);
+			pc = siCreateCell(&cd.c, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_SHORT:
-			pcd.ps = va_arg(arg, short *);
-			strInsertItemArrayZ(parrg, &pcd.ps, sizeof(void *), i);
+			cd.s = va_arg(arg, int);
+			pc = siCreateCell(&cd.s, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_INTEGER:
-			pcd.pi = va_arg(arg, int *);
-			strInsertItemArrayZ(parrg, &pcd.pi, sizeof(void *), i);
+			cd.i = va_arg(arg, int);
+			pc = siCreateCell(&cd.i, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_LONG:
-			pcd.pl = va_arg(arg, long *);
-			strInsertItemArrayZ(parrg, &pcd.pl, sizeof(void *), i);
+			cd.l = va_arg(arg, long);
+			pc = siCreateCell(&cd.l, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_FLOAT:
-			pcd.pf = va_arg(arg, float *);
-			strInsertItemArrayZ(parrg, &pcd.pf, sizeof(void *), i);
+			cd.f = va_arg(arg, double);
+			pc = siCreateCell(&cd.f, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_DOUBLE:
-			pcd.pd = va_arg(arg, double *);
-			strInsertItemArrayZ(parrg, &pcd.pd, sizeof(void *), i);
+			cd.d = va_arg(arg, double);
+			pc = siCreateCell(&cd.d, ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_STRING:
-			pcd.pstr = va_arg(arg, char *);
-			strInsertItemArrayZ(parrg, &pcd.pstr, sizeof(void *), i);
+			pc = siCreateCell(va_arg(arg, char *), ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		case CT_WSTRING:
-			pcd.pwstr = va_arg(arg, wchar_t *);
-			strInsertItemArrayZ(parrg, &pcd.pwstr, sizeof(void *), i);
+			pc = siCreateCell(va_arg(arg, wchar_t *), ct);
+			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
+			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
 			break;
 		}
 	}
@@ -748,6 +764,9 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 	r = siInsertIntoTableBase(ptrans, ptbl, cbfta, parrg);
 
 	strDeleteArrayZ(parrg);
+	for (i = 0; i < strLevelArrayZ(parrbuf); ++i)
+		siDeleteCell((P_CELL *)strLocateItemArrayZ(parrbuf, sizeof(P_CELL), i));
+	strDeleteArrayZ(parrbuf);
 
 	return r;
 }
