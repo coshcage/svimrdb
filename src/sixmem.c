@@ -2,7 +2,7 @@
  * Name:        sixmem.c
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0422240734L00389
+ * File ID:     0714231200H0505240225L00383
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -32,13 +32,7 @@
   */
 void _siReadString(char * buf, FILE * fp)
 {
-	size_t i = 0;
-	while ((i < BUFSIZ - 1) && (*buf = fgetc(fp)))
-	{
-		++buf;
-		++i;
-	}
-	buf[i] = '\0';
+	fgets(buf, BUFSIZ - 1, fp);
 }
 
 /* Attention:     This Is An Internal Function. No Interface for Library Users.
