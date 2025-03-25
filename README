@@ -3,6 +3,9 @@ This is an in-memory database that built under StoneValley.
 All files are published under GPLv2 license.
 If you want to develop this project with me, please send an email to cosh.cage at hotmail.com.
 You may download StoneValley from here: https://github.com/coshcage/StoneValley
+
 Compilation guide:
-Put svimrdb/src/*.c *.h with StoneValley/src/*.c *.h together and run:
-cc -lpthread -lm
+
+Install cmake >= 3.31 and run the following commands
+cmake -B build
+cmake --build build
