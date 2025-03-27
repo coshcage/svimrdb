@@ -9,3 +9,9 @@ Compilation guide:
 Install cmake >= 3.31 and run the following commands
 cmake -B build
 cmake --build build
+
+To build samples, you can use BUILD_SAMPLES option in cmake:
+cmake -B build -DBUILD_SAMPLES=ON
+cmake --build build
+
+The artifact will appear in build/Samples.
