@@ -147,12 +147,12 @@ void * foo(void * ptr)
 
 	ptbl_student = CreateTableStudent(ptrans);
 
-	while (TRUE != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
 	{
 		printf("SLEEP 1\n");
 		(void)sleep(1);
 	}
-	while (TRUE != siTrylock(ptrans, &ptbl_student, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, &ptbl_student, LT_X)) // Write lock.
 	{
 		printf("SLEEP 2\n");
 		(void)sleep(1);
@@ -162,12 +162,12 @@ void * foo(void * ptr)
 
 	ptbl_course = CreateTableCourse(ptrans);
 
-	while (TRUE != siTrylock(ptrans, &ptbl_course, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_course, LT_S)) // Share lock.
 	{
 		printf("SLEEP 3\n");
 		(void)sleep(1);
 	}
-	while (TRUE != siTrylock(ptrans, &ptbl_course, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, &ptbl_course, LT_X)) // Write lock.
 	{
 
 		printf("SLEEP 4\n");
@@ -178,12 +178,12 @@ void * foo(void * ptr)
 
 	ptbl_sc = CreateTableSC(ptrans);
 
-	while (TRUE != siTrylock(ptrans, &ptbl_sc, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_sc, LT_S)) // Share lock.
 	{
 		printf("SLEEP 5\n");
 		(void)sleep(1);
 	}
-	while (TRUE != siTrylock(ptrans, &ptbl_sc, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, &ptbl_sc, LT_X)) // Write lock.
 	{
 		printf("SLEEP 6\n");
 		(void)sleep(1);
@@ -200,7 +200,7 @@ void * bar(void * ptr)
 	P_TRANS ptrans;
 	ptrans = siBeginTransaction();
 
-	while (TRUE != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
 	{
 		printf("SLEEP 7\n");
 		(void)sleep(1);
@@ -216,7 +216,7 @@ void * bar(void * ptr)
 	strDeleteMatrix(pv);
 
 
-	while (TRUE != siTrylock(ptrans, &ptbl_course, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_course, LT_S)) // Share lock.
 	{
 
 		printf("SLEEP 8\n");
@@ -233,7 +233,7 @@ void * bar(void * ptr)
 	strDeleteMatrix(pv);
 
 
-	while (TRUE != siTrylock(ptrans, &ptbl_sc, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_sc, LT_S)) // Share lock.
 	{
 		printf("SLEEP 9\n");
 		(void)sleep(1);
@@ -254,7 +254,7 @@ void * bar(void * ptr)
 	 * /    \sdept(student)
 	 * select sdept from student
 	 */
-	while (TRUE != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, &ptbl_student, LT_S)) // Share lock.
 	{
 		printf("SLEEP 10\n");
 		(void)sleep(1);

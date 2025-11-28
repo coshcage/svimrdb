@@ -147,27 +147,27 @@ int main()
 
 	ptbl_student = CreateTableStudent(ptrans);
 
-	while (TRUE != siTrylock(ptrans, ptbl_student, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, ptbl_student, LT_S)) // Share lock.
 		;
-	while (TRUE != siTrylock(ptrans, ptbl_student, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, ptbl_student, LT_X)) // Write lock.
 		;
 	InsertIntoTableStudent(ptrans, ptbl_student);
 
 
 	ptbl_course = CreateTableCourse(ptrans);
 
-	while (TRUE != siTrylock(ptrans, ptbl_course, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, ptbl_course, LT_S)) // Share lock.
 		;
-	while (TRUE != siTrylock(ptrans, ptbl_course, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, ptbl_course, LT_X)) // Write lock.
 		;
 	InsertIntoTableCourse(ptrans, ptbl_course);
 
 
 	ptbl_sc = CreateTableSC(ptrans);
 
-	while (TRUE != siTrylock(ptrans, ptbl_sc, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, ptbl_sc, LT_S)) // Share lock.
 		;
-	while (TRUE != siTrylock(ptrans, ptbl_sc, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, ptbl_sc, LT_X)) // Write lock.
 		;
 	InsertIntoTableSC(ptrans, ptbl_sc);
 

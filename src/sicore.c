@@ -472,11 +472,11 @@ P_MATRIX siCreateCartesianProductView(P_MATRIX pma, P_MATRIX pmb)
  * Return value:  Pointer to a new allocated view.
  * Caution:       N/A.
  * Tip:
- //BOOL cbftestsel(P_CELL * pitem, size_t param)
+ //bool cbftestsel(P_CELL * pitem, size_t param)
  //{
  //	if (strcmp((*pitem)->pdata, "b1") == 0)
- //		return TRUE;
- //	return FALSE;
+ //		return true;
+ //	return false;
  //}
  //
  //int main(int argc, char * argv[])
@@ -521,7 +521,7 @@ P_MATRIX siCreateSelectView(P_ARRAY_Z * pparr, P_MATRIX pmtx, SICBF_SELECT cbfse
 		{
 			for (j = i = 0; i < pmtx->ln; ++i)
 			{
-				if (FALSE != cbfsel(strGetValueMatrix(NULL, pmtx, i, 0, sizeof(P_CELL)), param))
+				if (false != cbfsel(strGetValueMatrix(NULL, pmtx, i, 0, sizeof(P_CELL)), param))
 				{
 					if (NULL != pparr)
 						*(size_t *)strLocateItemArrayZ(*pparr, sizeof(size_t), j) = i;

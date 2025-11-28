@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdio.h>
 
-BOOL cbfsel(P_CELL * pitem, size_t param)
+bool cbfsel(P_CELL * pitem, size_t param)
 {
 	size_t i, j = 1, l;
 
@@ -20,11 +20,11 @@ BOOL cbfsel(P_CELL * pitem, size_t param)
 		strGetValueMatrix(&l, (P_DFA)param, j, 0, sizeof(size_t));
 		if (l & SIGN)
 		{
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 int main()
@@ -52,10 +52,10 @@ int main()
 
 	ptbl = siCreateTable(ptrans, "Student", parrhdr);
 
-	while (TRUE != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
 		;
 
-	while (TRUE != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
 		;
 
 	dfa = CompileRegex2DFA(L"(A|B)(A|B)*");

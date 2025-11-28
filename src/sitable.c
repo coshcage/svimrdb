@@ -14,7 +14,7 @@
 #include "svimrdb.h"
 
 static size_t sizSVTarget = 0; /* Variable for sorting column of a table. */
-static BOOL   bAscend = TRUE;  /* Ascend or descend for TRUE or FALSE respectively. */
+static bool   bAscend = true;  /* Ascend or descend for true or false respectively. */
 
 pthread_mutex_t mtxSST = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mtxBAD = PTHREAD_MUTEX_INITIALIZER;
@@ -85,12 +85,12 @@ static int _sicbfcmpSV(const void * px, const void * py)
  * Parameter:
  *      pmtx Pointer to a view.
  *       col Column you want to sort. Starts from 0.
- *      ascd TRUE for ascend. FALSE for descend.
+ *      ascd true for ascend. false for descend.
  * Return value:  N/A.
  * Caution:       Parameter pmtx must be allocated first.
  * Tip:           N/A.
  */
-void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd)
+void siSortView(P_MATRIX pmtx, size_t col, bool ascd)
 {
 	if (col >= pmtx->col)
 		return;
@@ -469,14 +469,14 @@ void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl)
  *           If this parameter equals NULL, default increasing function will be taken.
  *   parrarg Pointer of array of parameters you want to insert.
  *           Each element of this array is (void *).
- * Return value:  TRUE insertion succeeded. FALSE insertion failed.
+ * Return value:  true insertion succeeded. false insertion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg)
+bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg)
 {
 	size_t i, j, k, l;
-	BOOL bins = TRUE;
+	bool bins = true;
 
 	j = ptbl->curln;
 
@@ -488,7 +488,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 
 	if (k != ptbl->tbldata.ln)
 		if (NULL == strResizeMatrix(&(ptbl->tbldata), k, ptbl->tbldata.col, sizeof(P_CELL)))
-			return FALSE;
+			return false;
 
 	for (i = 0; i < strLevelArrayZ(&ptbl->header); ++i)
 	{
@@ -518,7 +518,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashChar, &cd.c, sizeof(char)))
 						hshInsertC(pt->phsh, siHashChar, &cd.c, sizeof(char));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -535,7 +535,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashShort, &cd.s, sizeof(short)))
 						hshInsertC(pt->phsh, siHashShort, &cd.s, sizeof(short));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -552,7 +552,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashInt, &cd.i, sizeof(int)))
 						hshInsertC(pt->phsh, siHashInt, &cd.i, sizeof(int));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -569,7 +569,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashLong, &cd.l, sizeof(long)))
 						hshInsertC(pt->phsh, siHashLong, &cd.l, sizeof(long));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -586,7 +586,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashFloat, &cd.f, sizeof(float)))
 						hshInsertC(pt->phsh, siHashFloat, &cd.f, sizeof(float));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -603,7 +603,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchC(pt->phsh, siHashDouble, &cd.d, sizeof(double)))
 						hshInsertC(pt->phsh, siHashDouble, &cd.d, sizeof(double));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -619,7 +619,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchCPlusA(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
 						hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -635,7 +635,7 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 					if (NULL == hshSearchCPlusW(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
 						hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 					else
-						bins = FALSE;
+						bins = false;
 					break;
 				}
 			}
@@ -677,14 +677,14 @@ BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
  *     cbfta Pointer to an increasing function.
  *           If this parameter equals NULL, default increasing function will be taken.
  *       ... Parameters you want to insert.
- * Return value:  TRUE insertion succeeded. FALSE insertion failed.
+ * Return value:  true insertion succeeded. false insertion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
+bool siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 {
 	size_t i;
-	BOOL r;
+	bool r;
 	P_ARRAY_Z parrg, parrbuf;
 	void * pbuf;
 	va_list arg;
@@ -779,11 +779,11 @@ BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
  *     cbfta Pointer to a decreasing function.
  *           If this parameter equals NULL, default decreasing function will be taken.
  *        ln Row number you want to delete. Starts from 0.
- * Return value:  TRUE deletion succeeded. FALSE deletion failed.
+ * Return value:  true deletion succeeded. false deletion failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln)
+bool siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln)
 {
 	if (NULL == cbfta)
 		cbfta = sicbftaDefaultDecrease;
@@ -870,9 +870,9 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t 
 		if (i != ptbl->tbldata.ln)
 			strResizeMatrix(&ptbl->tbldata, i, ptbl->tbldata.col, sizeof(P_CELL));
 
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 /* Function name: siUpdateTableCell
@@ -888,11 +888,11 @@ BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t 
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col)
+bool siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col)
 {
 	if (ln < ptbl->tbldata.ln && col < ptbl->tbldata.col)
 	{
-		BOOL balt = TRUE;
+		bool balt = true;
 		P_CELL pc;
 		P_TBLHDR pt = strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col);
 
@@ -904,7 +904,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 			{
 			case CR_NOT_NULL:
 				if (NULL == pval)
-					balt = FALSE;
+					balt = false;
 				break;
 			case CR_UNIQUE:
 			case CR_PRIMARY_KEY:
@@ -912,7 +912,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 				{
 				case CT_CHAR:
 					if (NULL != hshSearchC(pt->phsh, siHashChar, pval, sizeof(char)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashChar, pc->pdata, sizeof(char));
@@ -921,7 +921,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_SHORT:
 					if (NULL != hshSearchC(pt->phsh, siHashShort, pval, sizeof(short)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashShort, pc->pdata, sizeof(short));
@@ -930,7 +930,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_INTEGER:
 					if (NULL != hshSearchC(pt->phsh, siHashInt, pval, sizeof(int)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashInt, pc->pdata, sizeof(int));
@@ -939,7 +939,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_LONG:
 					if (NULL != hshSearchC(pt->phsh, siHashLong, pval, sizeof(long)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashLong, pc->pdata, sizeof(long));
@@ -948,7 +948,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_FLOAT:
 					if (NULL != hshSearchC(pt->phsh, siHashFloat, pval, sizeof(float)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashFloat, pc->pdata, sizeof(float));
@@ -957,7 +957,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_DOUBLE:
 					if (NULL != hshSearchC(pt->phsh, siHashDouble, pval, sizeof(double)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
@@ -966,7 +966,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_STRING:
 					if (NULL != hshSearchC(pt->phsh, siHashString, &pval, sizeof(char *)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
@@ -975,7 +975,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 					break;
 				case CT_WSTRING:
 					if (NULL != hshSearchC(pt->phsh, siHashWString, &pval, sizeof(wchar_t *)))
-						balt = FALSE;
+						balt = false;
 					else
 					{
 						hshRemoveC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
@@ -1013,7 +1013,7 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 
 		return balt;
 	}
-	return FALSE;
+	return false;
 }
 
 /* Function name: siAddTableColumn
@@ -1022,11 +1022,11 @@ BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to operate.
  *      phdr Pointer to a TBLHDR structure that contains new column description.
- * Return value:  TRUE adding succeeded. FALSE adding failed.
+ * Return value:  true adding succeeded. false adding failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
+bool siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 {
 	size_t i, j;
 	char buf[BUFSIZ] = { 0 };
@@ -1039,7 +1039,7 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 		
 		pt = (P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), i);
 		if (strcmp(pt->strname, buf) == 0)
-			return FALSE;
+			return false;
 	}
 	j = i = strLevelArrayZ(&ptbl->header);
 
@@ -1061,7 +1061,7 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 		strInsertItemArrayZ(&ptbl->header, &th, sizeof(TBLHDR), i);
 	}
 	else
-		return FALSE;
+		return false;
 
 	strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col + 1, sizeof(P_CELL));
 	
@@ -1081,7 +1081,7 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
 		queInjectDL(&ptrans->qoprlst, &da, sizeof(DATALT));
 	}
 	
-	return TRUE;
+	return true;
 }
 
 /* Function name: siDropTableColumn
@@ -1090,16 +1090,16 @@ BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr)
  *    ptrans Pointer to a transaction.
  *      ptbl Pointer to a table you want to operate.
  *       col Column number of the table. Starts from 0.
- * Return value:  TRUE dropping succeeded. FALSE dropping failed.
+ * Return value:  true dropping succeeded. false dropping failed.
  * Caution:       Parameter ptbl must be allocated first.
  * Tip:           N/A.
  */
-BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
+bool siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 {
 	size_t i;
 
 	if (col >= ptbl->tbldata.col)
-		return FALSE;
+		return false;
 
 	if (NULL != ptrans)
 	{
@@ -1128,7 +1128,7 @@ BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 		hshDeleteC(((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col))->phsh);
 
 	free(((P_TBLHDR)strLocateItemArrayZ(&ptbl->header, sizeof(TBLHDR), col))->strname);
-	strRemoveItemArrayZ(&ptbl->header, sizeof(TBLHDR), col, TRUE);
+	strRemoveItemArrayZ(&ptbl->header, sizeof(TBLHDR), col, true);
 
 	for (i = 0; i < ptbl->curln; ++i)
 	{
@@ -1143,7 +1143,7 @@ BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 	}
 
 	if (NULL != strResizeMatrix(&ptbl->tbldata, ptbl->tbldata.ln, ptbl->tbldata.col - 1, sizeof(P_CELL)))
-		return TRUE;
+		return true;
 
-	return FALSE;
+	return false;
 }

@@ -8,10 +8,10 @@
 
 #include "svimrdb.h"
 
-#define Y TRUE
-#define N FALSE
+#define Y true
+#define N false
 
-static BOOL const bCompatibleMatrix[][6] =
+static bool const bCompatibleMatrix[][6] =
 {
 	{Y,N,Y,N,N,Y},
 	{N,N,N,N,N,Y},
@@ -79,7 +79,7 @@ static int _sicbftvsTrans(void * pitem, size_t param)
 	P_TRANS pt = *(P_TRANS *)(P2P_BSTNODE(pitem)->knot.pdata);
 	if ((size_t)pt == 2[(size_t *)param])
 	{
-		3[(size_t *)param] = FALSE;
+		3[(size_t *)param] = false;
 		return CBF_CONTINUE;
 	}
 	if (!setIsEmptyT(&pt->setlock))
@@ -87,10 +87,10 @@ static int _sicbftvsTrans(void * pitem, size_t param)
 		int r;
 		r = setTraverseT(&pt->setlock, _sicbftvsFindLock, param, ETM_LEVELORDER);
 		if (CBF_TERMINATE == r)
-			3[(size_t *)param] = TRUE;
+			3[(size_t *)param] = true;
 		return r;
 	}
-	3[(size_t *)param] = FALSE;
+	3[(size_t *)param] = false;
 	return CBF_CONTINUE;
 }
 
@@ -100,11 +100,11 @@ static int _sicbftvsTrans(void * pitem, size_t param)
  *    ptrans Pointer to a transaction.
  *      pobj Pointer to an object.
  *        lt Lock type.
- * Return value:  TRUE lock accuired. FALSE lock refused.
+ * Return value:  true lock accuired. false lock refused.
  * Caution:       N/A.
  * Tip:           N/A.
  */
-BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
+bool siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
 {
 	size_t a[4];
 	LOCK l;
@@ -113,24 +113,24 @@ BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt)
 	a[0] = (size_t)pobj;
 	a[1] = lt;
 	a[2] = (size_t)ptrans;
-	a[3] = FALSE;
+	a[3] = false;
 
 	pthread_mutex_lock(&mtxPST);
 
 	if (NULL != psetTrans)
 	{
 		setTraverseT(psetTrans, _sicbftvsTrans, (size_t)a, ETM_LEVELORDER);
-		if (FALSE != a[3])
+		if (false != a[3])
 		{
 			pthread_mutex_unlock(&mtxPST);
-			return FALSE;
+			return false;
 		}
 	}
 
 	pthread_mutex_unlock(&mtxPST);
 
 	setInsertT(&ptrans->setlock, &l, sizeof(LOCK), _sicbfcmpLock);
-	return TRUE;
+	return true;
 }
 
 /* Function name: siUnlock

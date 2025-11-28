@@ -312,7 +312,7 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			a[0] = (size_t)da.ptbl;
 			a[1] = (size_t)ptr;
 
-			strTraverseLinkedListDC_X(ptrans->qoprlst.pfirst, NULL, _cbftvsAlterTargetTable, (size_t)a, FALSE);
+			strTraverseLinkedListDC_X(ptrans->qoprlst.pfirst, NULL, _cbftvsAlterTargetTable, (size_t)a, false);
 
 			if (NULL != pparr)
 			{

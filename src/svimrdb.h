@@ -57,7 +57,7 @@ typedef struct st_TBLHDR
 } TBLHDR, * P_TBLHDR;
 
 /* Selection function. */
-typedef BOOL(*SICBF_SELECT)(P_CELL * pitem, size_t param);
+typedef bool(*SICBF_SELECT)(P_CELL * pitem, size_t param);
 
 /* Table augmentation function. */
 typedef size_t(*SICBF_TBLAUG)(size_t curln, size_t ln);
@@ -171,7 +171,7 @@ P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz);
 P_CELL siCreateCell(void * pitem, CellType ct);
 void siDeleteCell(P_CELL * ppcell);
 /* Table and view functions. */
-void siSortView(P_MATRIX pmtx, size_t col, BOOL ascd);
+void siSortView(P_MATRIX pmtx, size_t col, bool ascd);
 P_MATRIX siInstantiateView(P_MATRIX pmtx);
 void siDestroyView(P_MATRIX pmtx);
 void siPrintView(P_MATRIX pmtx);
@@ -180,19 +180,19 @@ P_MATRIX siCreateViewOfTable(P_TABLE ptbl);
 P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr);
 P_TABLE siCopyTable(P_TRANS ptrans, P_TABLE ptbl);
 void siDeleteTable(P_TRANS ptrans, P_TABLE ptbl);
-BOOL siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg);
-BOOL siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...);
-BOOL siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln);
-BOOL siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col);
-BOOL siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
-BOOL siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
+bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_ARRAY_Z parrarg);
+bool siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...);
+bool siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t ln);
+bool siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, size_t col);
+bool siAddTableColumn(P_TRANS ptrans, P_TABLE ptbl, P_TBLHDR phdr);
+bool siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col);
 /* Functions for transactions. */
 P_TRANS siBeginTransaction();
 void siCommitTransaction(P_TRANS ptrans);
 void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans);
 void siReleaseAllTransaction();
 /* Lock functions. */
-BOOL siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
+bool siTrylock(P_TRANS ptrans, void * pobj, LockType lt);
 void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 
 #define BKSNUM         1021 /* 1021 is a prime. */

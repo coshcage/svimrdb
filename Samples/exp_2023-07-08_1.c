@@ -43,10 +43,10 @@ int main()
 	ptbl = siCreateTable(ptrans, "Student", parrhdr);
 
 
-	while (TRUE != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
+	while (true != siTrylock(ptrans, ptbl, LT_X)) // Write lock.
 		;
 
-	while (TRUE != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
+	while (true != siTrylock(ptrans, ptbl, LT_S)) // Share lock.
 		;
 
 	siInsertIntoTable(ptrans, ptbl, NULL, 2, "Lisa", L"CS");
@@ -71,7 +71,7 @@ int main()
 
 		pv = siCreateViewOfTable(ptbl2);
 
-		siSortView(pv, 1, TRUE);
+		siSortView(pv, 1, true);
 
 		siPrintView(pv);
 
