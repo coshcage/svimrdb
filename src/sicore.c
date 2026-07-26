@@ -2,7 +2,7 @@
  * Name:        sicore.c
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0217241548L00768
+ * File ID:     0628231947B0726260720L00768
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
@@ -607,7 +607,7 @@ P_MATRIX siCreateProjectView(P_MATRIX pmtx, P_ARRAY_Z parrz)
 	{
 		size_t i, j;
 		P_MATRIX pmtxr;
-		strSortArrayZ(parrz, sizeof(size_t), _grpCBFCompareInteger);
+		strSortArrayZ(parrz, sizeof(size_t), _grpCBFCompareInteger, false);
 		for (i = 0; i < parrz->num; ++i)
 		{
 			size_t col;
