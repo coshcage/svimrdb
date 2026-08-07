@@ -150,3 +150,4 @@ void siUnlock(P_TRANS ptrans, void * pobj, LockType lt)
 	l.lt = lt;
 	setRemoveT(&ptrans->setlock, &l, sizeof(LOCK), _sicbfcmpLock);
 }
+

@@ -5,7 +5,6 @@
 //  Licence:  GPLv2.
 //  Platform: Unix|GNU/Linux
 //
-#define _CRT_SECURE_NO_WARNINGS 1
 #include "svimrdb.h"
 #include "sixmem.h"
 
@@ -109,3 +108,4 @@ int main()
 
 	return 0;
 }
+

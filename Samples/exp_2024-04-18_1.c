@@ -29,7 +29,6 @@ bool cbfsel(P_CELL * pitem, size_t param)
 
 int main()
 {
-	size_t i;
 	P_TRANS ptrans;
 	P_TABLE ptbl;
 	P_ARRAY_Z parrhdr;
@@ -85,3 +84,4 @@ int main()
 
 	return 0;
 }
+

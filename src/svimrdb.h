@@ -2,7 +2,7 @@
  * Name:        svimrdb.h
  * Description: StoneValley in-memory relational database (aka SI).
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947A0504240117L00215
+ * File ID:     0628231947A0807260415L00221
  * License:     GPLv2.
  */
 #ifndef _SVIMRDB_H_
@@ -153,8 +153,14 @@ size_t siHashFloat(const void * pkey);
 size_t siHashDouble(const void * pkey);
 size_t siHashString(const void * pkey);
 size_t siHashWString(const void * pkey);
-P_NODE_S hshSearchCPlusA(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
-P_NODE_S hshSearchCPlusW(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size);
+int siCBFMatchChar(const void * px, const void * py);
+int siCBFMatchShort(const void * px, const void * py);
+int siCBFMatchInt(const void * px, const void * py);
+int siCBFMatchLong(const void * px, const void * py);
+int siCBFMatchFloat(const void * px, const void * py);
+int siCBFMatchDouble(const void * px, const void * py);
+int siCBFMatchString(const void * px, const void * py);
+int siCBFMatchWString(const void * px, const void * py);
 size_t siPlatformSize(void);
 void siPrintSystemVersion(void);
 size_t sicbftaDefaultIncrease(size_t curln, size_t ln);
@@ -209,6 +215,7 @@ void siUnlock(P_TRANS ptrans, void * pobj, LockType lt);
 */
 
 /* System version. */
-#define SYS_VER "1.0.2"
+#define SYS_VER "1.1.0"
 
 #endif
+

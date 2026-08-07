@@ -2,7 +2,7 @@
  * Name:        sicore.c
  * Description: SI core functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947B0726260720L00768
+ * File ID:     0628231947B0807260414L00776
  * License:     GPLv2.
  */
 #include <stdio.h>  /* Using macro BUFSIZ. */
@@ -11,7 +11,7 @@
 #include <math.h>   /* Using function roundf, round. */
 #include "svimrdb.h"
 
-/* size_t integer comparation function. */
+/* size_t integer comparison function. */
 extern int _grpCBFCompareInteger(const void * px, const void * py);
 static int _sicbfcmp(const void * px, const void * py);
 static int _sicbftvsMergeView(void * pitem, size_t param);
@@ -69,6 +69,8 @@ static int _sicbfcmp(const void * px, const void * py)
 				break;
 			case CT_WSTRING:
 				r = wcscmp((wchar_t *)pcx->pdata, (wchar_t *)pcy->pdata);
+				break;
+			case CT_NULL:
 				break;
 			}
 			if (0 == r)
@@ -678,6 +680,8 @@ P_CELL siCreateCell(void * pitem, CellType ct)
 			m = sizeof(wchar_t) * (wcslen((wchar_t *)pitem) + 1);
 			l += m;
 			break;
+		case CT_NULL:
+			break;
 		}
 		rtn = malloc(l);
 		if (NULL != rtn)
@@ -717,6 +721,7 @@ void siDeleteCell(P_CELL * ppcell)
 P_CELL siAlterCell(P_CELL pcl, void * newval)
 {
 	void * rtn = NULL;
+	CellType ct;
 	if (NULL != pcl)
 	{
 		size_t l = sizeof(CELL), m = l;
@@ -754,14 +759,18 @@ P_CELL siAlterCell(P_CELL pcl, void * newval)
 			m = wcslen((wchar_t *)newval) + 1;
 			l += m * sizeof(wchar_t);
 			break;
+		case CT_NULL:
+			break;
 		}
+		ct = pcl->ct;
 		rtn = realloc(pcl, l);
 		if (NULL != rtn)
 		{
-			((P_CELL)rtn)->ct = pcl->ct;
+			((P_CELL)rtn)->ct = ct;
 			((P_CELL)rtn)->pdata = (PUCHAR)rtn + sizeof(CELL);
 			memcpy(((P_CELL)rtn)->pdata, newval, m);
 		}
 	}
 	return (P_CELL)rtn;
 }
+

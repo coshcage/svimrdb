@@ -2,7 +2,7 @@
  * Name:        simisc.c
  * Description: Misc functions.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0703231856E0418240132L00330
+ * File ID:     0703231856E0807260414L00296
  * License:     GPLv2.
  */
 
@@ -14,8 +14,8 @@
 
 int _siCBFCompareNodeDataSPlusA(void * pitem, size_t param);
 int _siCBFCompareNodeDataSPlusW(void * pitem, size_t param);
-P_NODE_S _siSearchLinkedListSCPlusA(LIST_S list, const void * pitem, size_t size);
-P_NODE_S _siSearchLinkedListSCPlusW(LIST_S list, const void * pitem, size_t size);
+P_NODE_S _siSearchLinkedListSCPlusA(LIST_S list, const void * pitem);
+P_NODE_S _siSearchLinkedListSCPlusW(LIST_S list, const void * pitem);
 
 /* Function name: siStrLCase
  * Description:   Convert a zero terminated string to lower case.
@@ -124,8 +124,7 @@ size_t siHashDouble(const void * pkey)
  */
 size_t siHashString(const void * pkey)
 {
-	char * pstr = *(char **)pkey;
-	return hshCBFHashString(pstr);
+	return hshCBFHashString(*(char **)pkey);
 }
 
 /* Function name: siHashWString
@@ -143,6 +142,102 @@ size_t siHashWString(const void * pkey)
 	while ('\0' != *pstr)
 		hrtn = (hrtn << 13) + *pstr++;
 	return hrtn;
+}
+
+/* Function name: siCBFMatchChar
+ * Description:   Match chars.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchChar(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(char *)px - *(char *)py);
+}
+
+/* Function name: siCBFMatchShort
+ * Description:   Match short integers.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchShort(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(short *)px - *(short *)py);
+}
+
+/* Function name: siCBFMatchInt
+ * Description:   Match integers.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchInt(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(int *)px - *(int *)py);
+}
+
+/* Function name: siCBFMatchLong
+ * Description:   Match long integers.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchLong(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(long *)px - *(long *)py);
+}
+
+/* Function name: siCBFMatchFloat
+ * Description:   Match float numbers.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchFloat(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(uint32_t *)px - *(uint32_t *)py);
+}
+
+/* Function name: siCBFMatchDouble
+ * Description:   Match double floats.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchDouble(const void * px, const void * py)
+{
+	return (int)BOOLIZE(*(uint64_t *)px - *(uint64_t *)py);
+}
+
+/* Function name: siCBFMatchString
+ * Description:   Match strings.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchString(const void * px, const void * py)
+{
+	return strcmp(*(char **)px, *(char **)py);
+}
+
+/* Function name: siCBFMatchWString
+ * Description:   Match wide strings.
+ * Parameters:
+ *         px Pointer to an element.
+ *         py Pointer to another element.
+ * Return value:  CBF_SET_EQUAL if pointers matched. true if pointers mismatched.
+ */
+int siCBFMatchWString(const void * px, const void * py)
+{
+	return wcscmp(*(wchar_t **)px, *(wchar_t **)py);
 }
 
 /* Function name: siPlatformSize
@@ -166,136 +261,7 @@ size_t siPlatformSize(void)
  */
 void siPrintSystemVersion(void)
 {
-	(void)printf("%s", SYS_VER);
-}
-
-/* Attention:     This Is An Internal Function. No Interface for Library Users.
- * Function name: _siCBFCompareNodeDataSPlusA
- * Description:   Used to compare data of NODE_S for strings.
- * Parameters:
- *      pitem Pointer to a NODE_S.
- *      param Pointer to FindingInfo.
- * Return value:  If data matched, function would return value CBF_TERMINATE,
- *                otherwise function would return value CBF_CONTINUE.
- */
-int _siCBFCompareNodeDataSPlusA(void * pitem, size_t param)
-{
-	/* The type of param is P_FindingInfo. */
-	if 
-	(
-		0 == strcmp
-		(
-			*(char **)(((P_NODE_S)pitem)->pdata),
-			*(char **)(((P_FindingInfo)param)->pitem)
-		)
-	)
-	{
-		((P_FindingInfo)param)->result = pitem;
-		return CBF_TERMINATE;
-	}
-	return CBF_CONTINUE;
-}
-
-/* Attention:     This Is An Internal Function. No Interface for Library Users.
- * Function name: _siSearchLinkedListSCPlusA
- * Description:   Find pitem in a single linked-list list.
- * Parameters:
- *       list Pointer to the first NODE_S element you want to search in the linked-list.
- *      pitem Pointer to the item you want to search.
- *       size Size of data of pitem.
- * Return value:  Pointer to the NODE_S which contains the same data as pitem.
- * Caution:       Data in each node of linked-list must be in the same size.
- * Tip:           No dead cycles for circular linked-lists.
- */
-P_NODE_S _siSearchLinkedListSCPlusA(LIST_S list, const void * pitem, size_t size)
-{
-	FindingInfo fi;
-	fi.result = NULL;
-	fi.pitem = pitem;
-	fi.size = size;
-	strTraverseLinkedListSC_X(list, NULL, _siCBFCompareNodeDataSPlusA, (size_t)&fi);
-	return (P_NODE_S)fi.result;
-}
-
-/* Function name: hshSearchCPlusA
- * Description:   Search an element in a separate chaining hash table.
- * Parameters:
- *        pht Pointer to the hash table you want to operate.
- *     cbfhsh Pointer to hash function.
- *            The same hash table should use the same hash function.
- *       pkey Pointer to an element. Casted into (const void *).
- *      param size Size of data of pkey.
- * Return value:  Pointer to a NODE_S that contains key value.
- * Caution:       Parameter pht Must Be Allocated first.
- */
-P_NODE_S hshSearchCPlusA(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size)
-{
-	return _siSearchLinkedListSCPlusA(*(P_NODE_S *)(pht->pdata + (cbfhsh(pkey) % strLevelArrayZ(pht)) * sizeof(P_NODE_S)), pkey, size);
-}
-
-
-/* Attention:     This Is An Internal Function. No Interface for Library Users.
- * Function name: _siCBFCompareNodeDataSPlusA
- * Description:   Used to compare data of NODE_S for strings.
- * Parameters:
- *      pitem Pointer to a NODE_S.
- *      param Pointer to FindingInfo.
- * Return value:  If data matched, function would return value CBF_TERMINATE,
- *                otherwise function would return value CBF_CONTINUE.
- */
-int _siCBFCompareNodeDataSPlusW(void * pitem, size_t param)
-{
-	/* The type of param is P_FindingInfo. */
-	if
-	(
-		0 == wcscmp
-		(
-			*(wchar_t **)(((P_NODE_S)pitem)->pdata),
-			*(wchar_t **)(((P_FindingInfo)param)->pitem)
-		)
-	)
-	{
-		((P_FindingInfo)param)->result = pitem;
-		return CBF_TERMINATE;
-	}
-	return CBF_CONTINUE;
-}
-
-/* Attention:     This Is An Internal Function. No Interface for Library Users.
- * Function name: _siSearchLinkedListSCPlusA
- * Description:   Find pitem in a single linked-list list.
- * Parameters:
- *       list Pointer to the first NODE_S element you want to search in the linked-list.
- *      pitem Pointer to the item you want to search.
- *       size Size of data of pitem.
- * Return value:  Pointer to the NODE_S which contains the same data as pitem.
- * Caution:       Data in each node of linked-list must be in the same size.
- * Tip:           No dead cycles for circular linked-lists.
- */
-P_NODE_S _siSearchLinkedListSCPlusW(LIST_S list, const void * pitem, size_t size)
-{
-	FindingInfo fi;
-	fi.result = NULL;
-	fi.pitem = pitem;
-	fi.size = size;
-	strTraverseLinkedListSC_X(list, NULL, _siCBFCompareNodeDataSPlusW, (size_t)&fi);
-	return (P_NODE_S)fi.result;
-}
-
-/* Function name: hshSearchCPlusA
- * Description:   Search an element in a separate chaining hash table.
- * Parameters:
- *        pht Pointer to the hash table you want to operate.
- *     cbfhsh Pointer to hash function.
- *            The same hash table should use the same hash function.
- *       pkey Pointer to an element. Casted into (const void *).
- *      param size Size of data of pkey.
- * Return value:  Pointer to a NODE_S that contains key value.
- * Caution:       Parameter pht Must Be Allocated first.
- */
-P_NODE_S hshSearchCPlusW(P_HSHTBL_C pht, CBF_HASH cbfhsh, const void * pkey, size_t size)
-{
-	return _siSearchLinkedListSCPlusW(*(P_NODE_S *)(pht->pdata + (cbfhsh(pkey) % strLevelArrayZ(pht)) * sizeof(P_NODE_S)), pkey, size);
+	DISUSE(printf("%s", SYS_VER));
 }
 
 /* Function name: sicbftaDefaultIncrease
@@ -327,3 +293,4 @@ size_t sicbftaDefaultDecrease(size_t curln, size_t ln)
 	else
 		return ln;
 }
+

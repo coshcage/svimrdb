@@ -191,6 +191,8 @@ void * foo(void * ptr)
 	InsertIntoTableSC(ptrans, ptbl_sc);
 
 	siCommitTransaction(ptrans);
+	
+	return NULL;
 }
 
 void * bar(void * ptr)
@@ -274,6 +276,8 @@ void * bar(void * ptr)
 	
 
 	siCommitTransaction(ptrans);
+	
+	return NULL;
 }
 
 int main()
@@ -295,3 +299,4 @@ int main()
 
 	return 0;
 }
+

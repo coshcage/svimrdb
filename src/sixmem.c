@@ -2,7 +2,7 @@
  * Name:        sixmem.c
  * Description: SI external memory function.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0714231200H0505240225L00389
+ * File ID:     0714231200H0807260414L00393
  * License:     GPLv2.
  */
 #include "sixmem.h"
@@ -199,7 +199,6 @@ void siSaveTable(FILE * fp, long lpos, P_TABLE ptbl)
 				_siWriteWString((wchar_t *)(*ppc)->pdata, fp);
 				break;
 			}
-
 			++ppc;
 		}
 	}
@@ -375,8 +374,13 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 							case CT_WSTRING:
 								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 								break;
+							case CT_NULL:
+								break;
 							}
 						}
+						break;
+					case CR_NOT_NULL:
+					case CR_NONE:
 						break;
 					}
 				}
@@ -386,3 +390,4 @@ P_TABLE siLoadTable(FILE * fp, long lpos)
 	}
 	return NULL;
 }
+

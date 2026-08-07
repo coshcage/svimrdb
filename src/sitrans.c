@@ -2,7 +2,7 @@
  * Name:        sitrans.c
  * Description: Transaction control.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0702231427D0418240134L00368
+ * File ID:     0702231427D0807260414L00380
  * License:     GPLv2.
  */
 
@@ -198,7 +198,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 							case CT_WSTRING:
 								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 								break;
+							case CT_NULL:
+								break;
 							}
+							break;
+						case CR_NOT_NULL:
+						case CR_NONE:
 							break;
 						}
 					}
@@ -239,11 +244,13 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 			case CR_PRIMARY_KEY:
 				pt->phsh = hshCreateC(BKSNUM);
 				break;
+			case CR_NOT_NULL:
+			case CR_NONE:
+				break;
 			}
 			/* Alter table next. */
 			if (NULL != strResizeMatrix(&da.ptbl->tbldata, da.ptbl->tbldata.ln, da.ptbl->tbldata.col + 1, sizeof(P_CELL)))
 			{
-				size_t i;
 				for (i = 0; i < da.ptbl->curln; ++i)
 				{
 					P_CELL pc;
@@ -291,7 +298,12 @@ void siRollbackTransaction(P_ARRAY_Z * pparr, P_TRANS ptrans)
 							case CT_WSTRING:
 								hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 								break;
+							case CT_NULL:
+								break;
 							}
+							break;
+						case CR_NOT_NULL:
+						case CR_NONE:
 							break;
 						}
 					}
@@ -365,3 +377,4 @@ void siReleaseAllTransaction()
 
 	pthread_mutex_unlock(&mtxPST);
 }
+

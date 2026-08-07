@@ -2,10 +2,9 @@
  * Name:        sitable.c
  * Description: SI functions for tables.
  * Author:      cosh.cage#hotmail.com
- * File ID:     0628231947C0504240441L01150
+ * File ID:     0628231947C0807260414L01191
  * License:     GPLv2.
  */
-#define _CRT_SECURE_NO_WARNINGS 1 /* For MSVC debugging. */
 #include <stdio.h>  /* Using function printf, macro BUFSIZ. */
 #include <stdlib.h> /* Using function malloc, free, qsort. */
 #include <string.h> /* Using function strdup, memmove. */
@@ -67,6 +66,8 @@ static int _sicbfcmpSV(const void * px, const void * py)
 			break;
 		case CT_WSTRING:
 			r = wcscmp((wchar_t *)pcx->pdata, (wchar_t *)pcy->pdata);
+			break;
+		case CT_NULL:
 			break;
 		}
 	}
@@ -240,6 +241,8 @@ void siPrintView(P_MATRIX pmtx)
 					case CT_WSTRING:
 						wprintf(L"%s\t", (wchar_t *)pc->pdata);
 						break;
+					case CT_NULL:
+						break;
 					}
 				}
 				else
@@ -356,6 +359,8 @@ P_TABLE siCreateTable(P_TRANS ptrans, char * tblname, P_ARRAY_Z parrhdr)
 						break;
 					case CT_WSTRING:
 						hshCopyC(pt->phsh, siHashWString, ptb->phsh, sizeof(wchar_t *));
+						break;
+					case CT_NULL:
 						break;
 					}
 				}
@@ -515,10 +520,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashChar, &cd.c, sizeof(char)))
+					if (NULL == hshSearchC(pt->phsh, siHashChar, &cd.c, siCBFMatchChar))
 						hshInsertC(pt->phsh, siHashChar, &cd.c, sizeof(char));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -532,10 +540,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashShort, &cd.s, sizeof(short)))
+					if (NULL == hshSearchC(pt->phsh, siHashShort, &cd.s, siCBFMatchShort))
 						hshInsertC(pt->phsh, siHashShort, &cd.s, sizeof(short));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -549,10 +560,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashInt, &cd.i, sizeof(int)))
+					if (NULL == hshSearchC(pt->phsh, siHashInt, &cd.i, siCBFMatchInt))
 						hshInsertC(pt->phsh, siHashInt, &cd.i, sizeof(int));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -566,10 +580,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashLong, &cd.l, sizeof(long)))
+					if (NULL == hshSearchC(pt->phsh, siHashLong, &cd.l, siCBFMatchLong))
 						hshInsertC(pt->phsh, siHashLong, &cd.l, sizeof(long));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -583,10 +600,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashFloat, &cd.f, sizeof(float)))
+					if (NULL == hshSearchC(pt->phsh, siHashFloat, &cd.f, siCBFMatchFloat))
 						hshInsertC(pt->phsh, siHashFloat, &cd.f, sizeof(float));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -600,10 +620,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchC(pt->phsh, siHashDouble, &cd.d, sizeof(double)))
+					if (NULL == hshSearchC(pt->phsh, siHashDouble, &cd.d, siCBFMatchDouble))
 						hshInsertC(pt->phsh, siHashDouble, &cd.d, sizeof(double));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -616,10 +639,13 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchCPlusA(pt->phsh, siHashString, &pc->pdata, sizeof(char *)))
+					if (NULL == hshSearchC(pt->phsh, siHashString, &pc->pdata, siCBFMatchString))
 						hshInsertC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
 					else
 						bins = false;
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -632,13 +658,18 @@ bool siInsertIntoTableBase(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, P_A
 				{
 				case CR_UNIQUE:
 				case CR_PRIMARY_KEY:
-					if (NULL == hshSearchCPlusW(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *)))
+					if (NULL == hshSearchC(pt->phsh, siHashWString, &pc->pdata, siCBFMatchWString))
 						hshInsertC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
 					else
 						bins = false;
 					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
+					break;
 				}
 			}
+			break;
+		case CT_NULL:
 			break;
 		}
 		if (bins)
@@ -686,7 +717,6 @@ bool siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 	size_t i;
 	bool r;
 	P_ARRAY_Z parrg, parrbuf;
-	void * pbuf;
 	va_list arg;
 
 	va_start(arg, cbfta);
@@ -755,6 +785,8 @@ bool siInsertIntoTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, ...)
 			pc = siCreateCell(va_arg(arg, wchar_t *), ct);
 			strInsertItemArrayZ(parrbuf, &pc, sizeof(P_CELL), i);
 			strInsertItemArrayZ(parrg, &pc->pdata, sizeof(void *), i);
+			break;
+		case CT_NULL:
 			break;
 		}
 	}
@@ -826,30 +858,35 @@ bool siDeleteFromTable(P_TRANS ptrans, P_TABLE ptbl, SICBF_TBLAUG cbfta, size_t 
 					switch (pt->ct)
 					{
 					case CT_CHAR:
-						hshRemoveC(pt->phsh, siHashChar, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(char));
+						hshRemoveC(pt->phsh, siHashChar, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchChar);
 						break;
 					case CT_SHORT:
-						hshRemoveC(pt->phsh, siHashShort, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(short));
+						hshRemoveC(pt->phsh, siHashShort, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchShort);
 						break;
 					case CT_INTEGER:
-						hshRemoveC(pt->phsh, siHashInt, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(int));
+						hshRemoveC(pt->phsh, siHashInt, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchInt);
 						break;
 					case CT_LONG:
-						hshRemoveC(pt->phsh, siHashLong, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(long));
+						hshRemoveC(pt->phsh, siHashLong, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchLong);
 						break;
 					case CT_FLOAT:
-						hshRemoveC(pt->phsh, siHashFloat, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(float));
+						hshRemoveC(pt->phsh, siHashFloat, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchFloat);
 						break;
 					case CT_DOUBLE:
-						hshRemoveC(pt->phsh, siHashDouble, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(double));
+						hshRemoveC(pt->phsh, siHashDouble, (*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchDouble);
 						break;
 					case CT_STRING:
-						hshRemoveC(pt->phsh, siHashString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(char *));
+						hshRemoveC(pt->phsh, siHashString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchString);
 						break;
 					case CT_WSTRING:
-						hshRemoveC(pt->phsh, siHashWString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, sizeof(wchar_t *));
+						hshRemoveC(pt->phsh, siHashWString, &(*(P_CELL *)strGetValueMatrix(NULL, &ptbl->tbldata, ln, i, sizeof(P_CELL)))->pdata, siCBFMatchWString);
+						break;
+					case CT_NULL:
 						break;
 					}
+					break;
+				case CR_NOT_NULL:
+				case CR_NONE:
 					break;
 				}
 			}
@@ -911,78 +948,82 @@ bool siUpdateTableCell(P_TRANS ptrans, P_TABLE ptbl, void * pval, size_t ln, siz
 				switch (pt->ct)
 				{
 				case CT_CHAR:
-					if (NULL != hshSearchC(pt->phsh, siHashChar, pval, sizeof(char)))
+					if (NULL != hshSearchC(pt->phsh, siHashChar, pval, siCBFMatchChar))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashChar, pc->pdata, sizeof(char));
+						hshRemoveC(pt->phsh, siHashChar, pc->pdata, siCBFMatchChar);
 						hshInsertC(pt->phsh, siHashChar, pval, sizeof(char));
 					}
 					break;
 				case CT_SHORT:
-					if (NULL != hshSearchC(pt->phsh, siHashShort, pval, sizeof(short)))
+					if (NULL != hshSearchC(pt->phsh, siHashShort, pval, siCBFMatchShort))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashShort, pc->pdata, sizeof(short));
+						hshRemoveC(pt->phsh, siHashShort, pc->pdata, siCBFMatchShort);
 						hshInsertC(pt->phsh, siHashShort, pval, sizeof(short));
 					}
 					break;
 				case CT_INTEGER:
-					if (NULL != hshSearchC(pt->phsh, siHashInt, pval, sizeof(int)))
+					if (NULL != hshSearchC(pt->phsh, siHashInt, pval, siCBFMatchInt))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashInt, pc->pdata, sizeof(int));
+						hshRemoveC(pt->phsh, siHashInt, pc->pdata, siCBFMatchInt);
 						hshInsertC(pt->phsh, siHashInt, pval, sizeof(int));
 					}
 					break;
 				case CT_LONG:
-					if (NULL != hshSearchC(pt->phsh, siHashLong, pval, sizeof(long)))
+					if (NULL != hshSearchC(pt->phsh, siHashLong, pval, siCBFMatchLong))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashLong, pc->pdata, sizeof(long));
+						hshRemoveC(pt->phsh, siHashLong, pc->pdata, siCBFMatchLong);
 						hshInsertC(pt->phsh, siHashLong, pval, sizeof(long));
 					}
 					break;
 				case CT_FLOAT:
-					if (NULL != hshSearchC(pt->phsh, siHashFloat, pval, sizeof(float)))
+					if (NULL != hshSearchC(pt->phsh, siHashFloat, pval, siCBFMatchFloat))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashFloat, pc->pdata, sizeof(float));
+						hshRemoveC(pt->phsh, siHashFloat, pc->pdata, siCBFMatchFloat);
 						hshInsertC(pt->phsh, siHashFloat, pval, sizeof(float));
 					}
 					break;
 				case CT_DOUBLE:
-					if (NULL != hshSearchC(pt->phsh, siHashDouble, pval, sizeof(double)))
+					if (NULL != hshSearchC(pt->phsh, siHashDouble, pval, siCBFMatchDouble))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashDouble, pc->pdata, sizeof(double));
+						hshRemoveC(pt->phsh, siHashDouble, pc->pdata, siCBFMatchDouble);
 						hshInsertC(pt->phsh, siHashDouble, pval, sizeof(double));
 					}
 					break;
 				case CT_STRING:
-					if (NULL != hshSearchC(pt->phsh, siHashString, &pval, sizeof(char *)))
+					if (NULL != hshSearchC(pt->phsh, siHashString, &pval, siCBFMatchString))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashString, &pc->pdata, sizeof(char *));
+						hshRemoveC(pt->phsh, siHashString, &pc->pdata, siCBFMatchString);
 						hshInsertC(pt->phsh, siHashString, &pval, sizeof(char *));
 					}
 					break;
 				case CT_WSTRING:
-					if (NULL != hshSearchC(pt->phsh, siHashWString, &pval, sizeof(wchar_t *)))
+					if (NULL != hshSearchC(pt->phsh, siHashWString, &pval, siCBFMatchWString))
 						balt = false;
 					else
 					{
-						hshRemoveC(pt->phsh, siHashWString, &pc->pdata, sizeof(wchar_t *));
+						hshRemoveC(pt->phsh, siHashWString, &pc->pdata, siCBFMatchWString);
 						hshInsertC(pt->phsh, siHashWString, &pval, sizeof(wchar_t *));
 					}
 					break;
+				case CT_NULL:
+					break;
 				}
+				break;
+			case CR_NONE:
 				break;
 			}
 		}
@@ -1147,3 +1188,4 @@ bool siDropTableColumn(P_TRANS ptrans, P_TABLE ptbl, size_t col)
 
 	return false;
 }
+
